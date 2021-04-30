@@ -32,8 +32,8 @@ import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
 
-public final class JwtConfigurer<H extends HttpSecurityBuilder<H>> extends
-        AbstractHttpConfigurer<JwtConfigurer<H>, H> {
+public final class AccountLoginConfigurer<H extends HttpSecurityBuilder<H>> extends
+        AbstractHttpConfigurer<AccountLoginConfigurer<H>, H> {
     private final KeyPair keyPair = generateRsaKey();
     private final AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource = new WebAuthenticationDetailsSource();
     private final JwtAuthenticationSuccessHandler successHandler = new JwtAuthenticationSuccessHandler(keyPair);
@@ -45,9 +45,9 @@ public final class JwtConfigurer<H extends HttpSecurityBuilder<H>> extends
 
     private UsernamePasswordAuthenticationFilter authFilter;
 
-    public JwtConfigurer() {
+    public AccountLoginConfigurer() {
         authFilter = new UsernamePasswordAuthenticationFilter();
-        loginProcessingUrl("/login");
+        loginProcessingUrl("/account/login");
         usernameParameter("username");
         passwordParameter("password");
         expiresIn(Duration.ofDays(7L));
@@ -57,9 +57,9 @@ public final class JwtConfigurer<H extends HttpSecurityBuilder<H>> extends
      * Specifies the URL to validate the credentials.
      *
      * @param loginProcessingUrl the URL to validate username and password
-     * @return the {@link JwtConfigurer} for additional customization
+     * @return the {@link AccountLoginConfigurer} for additional customization
      */
-    public JwtConfigurer<H> loginProcessingUrl(String loginProcessingUrl) {
+    public AccountLoginConfigurer<H> loginProcessingUrl(String loginProcessingUrl) {
         RequestMatcher requestMatcher = new AntPathRequestMatcher(loginProcessingUrl, "POST");
         authFilter.setRequiresAuthenticationRequestMatcher(requestMatcher);
         return this;
@@ -71,9 +71,9 @@ public final class JwtConfigurer<H extends HttpSecurityBuilder<H>> extends
      *
      * @param usernameParameter the HTTP parameter to look for the username when
      *                          performing authentication
-     * @return the {@link JwtConfigurer} for additional customization
+     * @return the {@link AccountLoginConfigurer} for additional customization
      */
-    public JwtConfigurer<H> usernameParameter(String usernameParameter) {
+    public AccountLoginConfigurer<H> usernameParameter(String usernameParameter) {
         authFilter.setUsernameParameter(usernameParameter);
         return this;
     }
@@ -84,9 +84,9 @@ public final class JwtConfigurer<H extends HttpSecurityBuilder<H>> extends
      *
      * @param passwordParameter the HTTP parameter to look for the password when
      *                          performing authentication
-     * @return the {@link JwtConfigurer} for additional customization
+     * @return the {@link AccountLoginConfigurer} for additional customization
      */
-    public JwtConfigurer<H> passwordParameter(String passwordParameter) {
+    public AccountLoginConfigurer<H> passwordParameter(String passwordParameter) {
         authFilter.setPasswordParameter(passwordParameter);
         return this;
     }
@@ -95,9 +95,9 @@ public final class JwtConfigurer<H extends HttpSecurityBuilder<H>> extends
      * Set the JWT expires after the expired time.
      *
      * @param expiresIn the expired time
-     * @return the {@link JwtConfigurer} for additional customization
+     * @return the {@link AccountLoginConfigurer} for additional customization
      */
-    public JwtConfigurer<H> expiresIn(Duration expiresIn) {
+    public AccountLoginConfigurer<H> expiresIn(Duration expiresIn) {
         successHandler.setExpiresIn(expiresIn);
         return this;
     }

@@ -1,4 +1,4 @@
-package com.github.zhangquanli.security.oauth2.jwt;
+package com.github.zhangquanli.security.jwt;
 
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimAccessor;

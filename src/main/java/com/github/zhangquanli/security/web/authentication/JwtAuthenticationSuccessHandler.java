@@ -1,9 +1,9 @@
 package com.github.zhangquanli.security.web.authentication;
 
-import com.github.zhangquanli.security.oauth2.jwt.JoseHeader;
-import com.github.zhangquanli.security.oauth2.jwt.JwtClaimsSet;
-import com.github.zhangquanli.security.oauth2.jwt.JwtEncoder;
-import com.github.zhangquanli.security.oauth2.jwt.NimbusJwsEncoder;
+import com.github.zhangquanli.security.jwt.JoseHeader;
+import com.github.zhangquanli.security.jwt.JwtClaimsSet;
+import com.github.zhangquanli.security.jwt.JwtEncoder;
+import com.github.zhangquanli.security.jwt.NimbusJwsEncoder;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;

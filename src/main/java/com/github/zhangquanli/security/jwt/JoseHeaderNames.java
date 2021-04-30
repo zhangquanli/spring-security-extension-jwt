@@ -1,4 +1,4 @@
-package com.github.zhangquanli.security.oauth2.jwt;
+package com.github.zhangquanli.security.jwt;
 
 /**
  * The Registered Header Parameter Names defined by the JSON Web Token (JWT),

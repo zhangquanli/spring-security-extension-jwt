@@ -1,4 +1,4 @@
-package com.github.zhangquanli.security.oauth2.jwt;
+package com.github.zhangquanli.security.jwt;
 
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.factories.DefaultJWSSignerFactory;

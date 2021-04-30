@@ -1,4 +1,4 @@
-package com.github.zhangquanli.security.oauth2.jwt;
+package com.github.zhangquanli.security.jwt;
 
 import org.springframework.security.oauth2.core.converter.ClaimConversionService;
 import org.springframework.security.oauth2.jose.jws.JwsAlgorithm;

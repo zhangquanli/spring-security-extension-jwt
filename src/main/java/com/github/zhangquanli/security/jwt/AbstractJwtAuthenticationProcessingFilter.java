@@ -1,9 +1,5 @@
-package com.github.zhangquanli.security;
+package com.github.zhangquanli.security.jwt;
 
-import com.github.zhangquanli.security.jwt.JoseHeader;
-import com.github.zhangquanli.security.jwt.JwtClaimsSet;
-import com.github.zhangquanli.security.jwt.JwtEncoder;
-import com.github.zhangquanli.security.jwt.JwtEncoders;
 import org.springframework.core.log.LogMessage;
 import org.springframework.security.authentication.event.InteractiveAuthenticationSuccessEvent;
 import org.springframework.security.core.Authentication;
@@ -29,8 +25,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public abstract class AbstractJwtAuthenticationProcessingFilter extends AbstractAuthenticationProcessingFilter {
-    private JwtEncoder jwtEncoder = JwtEncoders.defaultJwtEncoder();
     private Duration expiresIn = Duration.ofDays(7L);
+    private JwtEncoder jwtEncoder = JwtUtil.defaultJwtEncoder();
 
     protected AbstractJwtAuthenticationProcessingFilter(RequestMatcher requiresAuthenticationRequestMatcher) {
         super(requiresAuthenticationRequestMatcher);

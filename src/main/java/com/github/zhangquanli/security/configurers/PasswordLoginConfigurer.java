@@ -1,8 +1,6 @@
-package com.github.zhangquanli.security.config.annotation.web.configurers;
+package com.github.zhangquanli.security.configurers;
 
-import com.github.zhangquanli.security.jwt.JwtEncoder;
-import com.github.zhangquanli.security.jwt.JwtEncoders;
-import com.github.zhangquanli.security.password.web.authentication.PasswordAuthenticationFilter;
+import com.github.zhangquanli.security.password.PasswordAuthenticationFilter;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
 
 /**
@@ -10,11 +8,11 @@ import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
  */
 public final class PasswordLoginConfigurer<H extends HttpSecurityBuilder<H>> extends
         AbstractJwtAuthenticationFilterConfigurer<H, PasswordLoginConfigurer<H>, PasswordAuthenticationFilter> {
-    private JwtEncoder jwtEncoder;
 
     public PasswordLoginConfigurer() {
         super(new PasswordAuthenticationFilter(), "/password_login");
-        jwtEncoder(JwtEncoders.defaultJwtEncoder());
+        usernameParameter("username");
+        passwordParameter("password");
     }
 
     /**
@@ -41,31 +39,5 @@ public final class PasswordLoginConfigurer<H extends HttpSecurityBuilder<H>> ext
     public PasswordLoginConfigurer<H> passwordParameter(String passwordParameter) {
         getAuthenticationFilter().setPasswordParameter(passwordParameter);
         return this;
-    }
-
-    /**
-     * Specifies the {@link JwtEncoder} to use when jwt generates.
-     *
-     * @param jwtEncoder the {@link JwtEncoder}
-     * @return the {@link PasswordLoginConfigurer} for additional customization
-     */
-    public final PasswordLoginConfigurer<H> jwtEncoder(JwtEncoder jwtEncoder) {
-        this.jwtEncoder = jwtEncoder;
-        getAuthenticationFilter().setJwtEncoder(jwtEncoder);
-        return this;
-    }
-
-    @Override
-    public void init(H http) {
-        super.init(http);
-        registerDefaultJwtEncoder(http);
-    }
-
-    @SuppressWarnings("unchecked")
-    private void registerDefaultJwtEncoder(H http) {
-        SmsLoginConfigurer<H> smsLogin = http.getConfigurer(SmsLoginConfigurer.class);
-        if (smsLogin != null) {
-            smsLogin.jwtEncoder(jwtEncoder);
-        }
     }
 }

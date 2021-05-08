@@ -1,7 +1,6 @@
-package com.github.zhangquanli.security.config.annotation.web.configurers;
+package com.github.zhangquanli.security.configurers;
 
-import com.github.zhangquanli.security.jwt.JwtEncoder;
-import com.github.zhangquanli.security.sms.web.authentication.SmsAuthenticationFilter;
+import com.github.zhangquanli.security.sms.SmsAuthenticationFilter;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
 
 /**
@@ -12,6 +11,8 @@ public final class SmsLoginConfigurer<H extends HttpSecurityBuilder<H>> extends
 
     public SmsLoginConfigurer() {
         super(new SmsAuthenticationFilter(), "/sms_login");
+        mobileParameter("mobile");
+        codeParameter("code");
     }
 
     /**
@@ -37,17 +38,6 @@ public final class SmsLoginConfigurer<H extends HttpSecurityBuilder<H>> extends
      */
     public SmsLoginConfigurer<H> codeParameter(String codeParameter) {
         getAuthenticationFilter().setCodeParameter(codeParameter);
-        return this;
-    }
-
-    /**
-     * Specifies the {@link JwtEncoder} to use when jwt generates.
-     *
-     * @param jwtEncoder the {@link JwtEncoder}
-     * @return the {@link PasswordLoginConfigurer} for additional customization
-     */
-    public final SmsLoginConfigurer<H> jwtEncoder(JwtEncoder jwtEncoder) {
-        getAuthenticationFilter().setJwtEncoder(jwtEncoder);
         return this;
     }
 }

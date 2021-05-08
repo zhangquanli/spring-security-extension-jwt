@@ -1,8 +1,7 @@
-package com.github.zhangquanli.security.config.annotation.web.configurers;
+package com.github.zhangquanli.security.configurers;
 
-import com.github.zhangquanli.security.AbstractJwtAuthenticationProcessingFilter;
-import com.github.zhangquanli.security.jwt.JwtAuthenticationFailureHandler;
-import com.github.zhangquanli.security.jwt.JwtAuthenticationSuccessHandler;
+import com.github.zhangquanli.security.jwt.*;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,10 +11,7 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.RememberMeServices;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.web.authentication.*;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.util.matcher.*;
 import org.springframework.web.accept.ContentNegotiationStrategy;
@@ -32,6 +28,7 @@ public abstract class AbstractJwtAuthenticationFilterConfigurer<B extends HttpSe
     private final F authFilter;
     private RequestMatcher loginProcessingRequestMatcher;
     private final AuthenticationEntryPoint authenticationEntryPoint;
+    private JwtEncoder jwtEncoder;
 
     public AbstractJwtAuthenticationFilterConfigurer(F authenticationFilter, String loginProcessingUrl) {
         this.authFilter = authenticationFilter;
@@ -92,6 +89,16 @@ public abstract class AbstractJwtAuthenticationFilterConfigurer<B extends HttpSe
         return getSelf();
     }
 
+    /**
+     * Specifies the {@link JwtEncoder} to use when jwt generates.
+     *
+     * @param jwtEncoder the {@link JwtEncoder}
+     * @return the {@link PasswordLoginConfigurer} for additional customization
+     */
+    public final T jwtEncoder(JwtEncoder jwtEncoder) {
+        this.jwtEncoder = jwtEncoder;
+        return getSelf();
+    }
 
     /**
      * Specifies the {@link Duration} to use when jwt expires.
@@ -112,6 +119,7 @@ public abstract class AbstractJwtAuthenticationFilterConfigurer<B extends HttpSe
 
     @Override
     public void configure(B http) {
+        authFilter.setJwtEncoder(getJwtEncoder(http));
         authFilter.setAuthenticationManager(http.getSharedObject(AuthenticationManager.class));
         SessionAuthenticationStrategy sessionAuthenticationStrategy = http
                 .getSharedObject(SessionAuthenticationStrategy.class);
@@ -123,7 +131,23 @@ public abstract class AbstractJwtAuthenticationFilterConfigurer<B extends HttpSe
             this.authFilter.setRememberMeServices(rememberMeServices);
         }
         F filter = postProcess(this.authFilter);
-        http.addFilter(filter);
+        http.addFilterAfter(filter, UsernamePasswordAuthenticationFilter.class);
+    }
+
+    private JwtEncoder getJwtEncoder(B http) {
+        if (jwtEncoder == null) {
+            ApplicationContext context = http.getSharedObject(ApplicationContext.class);
+            if (context.getBeanNamesForType(JwtEncoder.class).length > 0) {
+                jwtEncoder = context.getBean(JwtEncoder.class);
+            } else {
+                jwtEncoder = http.getSharedObject(JwtEncoder.class);
+                if (jwtEncoder == null) {
+                    jwtEncoder = JwtUtil.defaultJwtEncoder();
+                    http.setSharedObject(JwtEncoder.class, jwtEncoder);
+                }
+            }
+        }
+        return jwtEncoder;
     }
 
     /**

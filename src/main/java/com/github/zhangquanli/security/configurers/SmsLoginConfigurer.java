@@ -1,7 +1,12 @@
 package com.github.zhangquanli.security.configurers;
 
 import com.github.zhangquanli.security.sms.SmsAuthenticationFilter;
+import com.github.zhangquanli.security.sms.SmsAuthenticationProvider;
+import com.github.zhangquanli.security.sms.VerifiedCodeRepository;
+import org.springframework.context.ApplicationContext;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 /**
  * 短信登录配置
@@ -39,5 +44,22 @@ public final class SmsLoginConfigurer<H extends HttpSecurityBuilder<H>> extends
     public SmsLoginConfigurer<H> codeParameter(String codeParameter) {
         getAuthenticationFilter().setCodeParameter(codeParameter);
         return this;
+    }
+
+    @Override
+    public void init(H http) {
+        AuthenticationProvider authenticationProvider = getAuthenticationProvider(http);
+        http.authenticationProvider(authenticationProvider);
+        super.init(http);
+    }
+
+    private AuthenticationProvider getAuthenticationProvider(H http) {
+        ApplicationContext applicationContext = http.getSharedObject(ApplicationContext.class);
+        UserDetailsService userDetailsService = applicationContext.getBean(UserDetailsService.class);
+        VerifiedCodeRepository verifiedCodeRepository = applicationContext.getBean(VerifiedCodeRepository.class);
+        SmsAuthenticationProvider provider = new SmsAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setVerifiedCodeRepository(verifiedCodeRepository);
+        return provider;
     }
 }

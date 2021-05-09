@@ -45,7 +45,9 @@ public class SmsAuthenticationProvider implements AuthenticationProvider, Initia
                         "UserDetailService returned null, which is an interface contract violation");
             }
         } catch (UsernameNotFoundException ex) {
-            logger.debug("Failed to fin user '" + mobile + "'");
+            if (logger.isDebugEnabled()) {
+                logger.debug("Failed to find user '" + mobile + "'");
+            }
             throw new BadCredentialsException("Bad credentials");
         } catch (InternalAuthenticationServiceException ex) {
             throw ex;

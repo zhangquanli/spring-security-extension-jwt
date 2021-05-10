@@ -21,8 +21,8 @@ import org.springframework.util.Assert;
 
 import javax.servlet.http.HttpServletRequest;
 
-public final class JwtConfigurer<H extends HttpSecurityBuilder<H>>
-        extends AbstractHttpConfigurer<JwtConfigurer<H>, H> {
+public final class BearerTokenConfigurer<H extends HttpSecurityBuilder<H>>
+        extends AbstractHttpConfigurer<BearerTokenConfigurer<H>, H> {
     private AuthenticationManagerResolver<HttpServletRequest> authenticationManagerResolver;
     private BearerTokenResolver bearerTokenResolver;
     private JwtDecoder jwtDecoder;
@@ -30,32 +30,32 @@ public final class JwtConfigurer<H extends HttpSecurityBuilder<H>>
     private AuthenticationEntryPoint authenticationEntryPoint = new BearerTokenAuthenticationEntryPoint();
     private final BearerTokenRequestMatcher requestMatcher = new BearerTokenRequestMatcher();
 
-    public JwtConfigurer<H> authenticationManagerResolver(
+    public BearerTokenConfigurer<H> authenticationManagerResolver(
             AuthenticationManagerResolver<HttpServletRequest> authenticationManagerResolver) {
         Assert.notNull(authenticationManagerResolver, "authenticationManagerResolver cannot be null");
         this.authenticationManagerResolver = authenticationManagerResolver;
         return this;
     }
 
-    public JwtConfigurer<H> bearerTokenResolver(BearerTokenResolver bearerTokenResolver) {
+    public BearerTokenConfigurer<H> bearerTokenResolver(BearerTokenResolver bearerTokenResolver) {
         Assert.notNull(bearerTokenResolver, "bearerTokenResolver cannot be null");
         this.bearerTokenResolver = bearerTokenResolver;
         return this;
     }
 
-    public JwtConfigurer<H> jwtDecoder(JwtDecoder jwtDecoder) {
+    public BearerTokenConfigurer<H> jwtDecoder(JwtDecoder jwtDecoder) {
         Assert.notNull(jwtDecoder, "jwtDecoder cannot be null");
         this.jwtDecoder = jwtDecoder;
         return this;
     }
 
-    public JwtConfigurer<H> accessDeniedHandler(AccessDeniedHandler accessDeniedHandler) {
+    public BearerTokenConfigurer<H> accessDeniedHandler(AccessDeniedHandler accessDeniedHandler) {
         Assert.notNull(accessDeniedHandler, "accessDeniedHandler cannot be null");
         this.accessDeniedHandler = accessDeniedHandler;
         return this;
     }
 
-    public JwtConfigurer<H> authenticationEntryPoint(AuthenticationEntryPoint authenticationEntryPoint) {
+    public BearerTokenConfigurer<H> authenticationEntryPoint(AuthenticationEntryPoint authenticationEntryPoint) {
         Assert.notNull(authenticationEntryPoint, "authenticationEntryPoint");
         this.authenticationEntryPoint = authenticationEntryPoint;
         return this;

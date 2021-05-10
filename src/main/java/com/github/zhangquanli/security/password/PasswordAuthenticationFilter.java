@@ -5,7 +5,6 @@ import com.github.zhangquanli.security.jwt.JwtAuthenticationFailureHandler;
 import com.github.zhangquanli.security.jwt.JwtAuthenticationSuccessHandler;
 import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -43,7 +42,7 @@ public class PasswordAuthenticationFilter extends AbstractJwtAuthenticationProce
         username = username.trim();
         String password = obtainPassword(request);
         password = (password != null) ? password : "";
-        UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(username, password);
+        PasswordAuthenticationToken authRequest = new PasswordAuthenticationToken(username, password);
         // Allow subclasses to set the "details" property
         setDetails(request, authRequest);
         return getAuthenticationManager().authenticate(authRequest);
@@ -102,7 +101,7 @@ public class PasswordAuthenticationFilter extends AbstractJwtAuthenticationProce
      * @param authRequest the authentication request object that should have its details
      *                    set
      */
-    protected void setDetails(HttpServletRequest request, UsernamePasswordAuthenticationToken authRequest) {
+    protected void setDetails(HttpServletRequest request, PasswordAuthenticationToken authRequest) {
         authRequest.setDetails(authenticationDetailsSource.buildDetails(request));
     }
 }

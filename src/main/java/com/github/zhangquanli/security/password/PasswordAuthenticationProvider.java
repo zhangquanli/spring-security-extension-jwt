@@ -1,9 +1,7 @@
-package com.github.zhangquanli.security.sms;
+package com.github.zhangquanli.security.password;
 
 import com.github.zhangquanli.security.jwt.AbstractJwtAuthenticationProvider;
 import com.github.zhangquanli.security.jwt.AbstractJwtAuthenticationToken;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
@@ -12,35 +10,43 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsChecker;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.Assert;
 
-public class SmsAuthenticationProvider extends AbstractJwtAuthenticationProvider implements InitializingBean {
-    private final Log logger = LogFactory.getLog(getClass());
+public class PasswordAuthenticationProvider extends AbstractJwtAuthenticationProvider implements InitializingBean {
+    /**
+     * The plaintext password used to perform {@link PasswordEncoder#matches(CharSequence, String)}
+     * on when the user is not found to avoid SEC-2056.
+     */
+    private static final String USER_NOT_FOUND_PASSWORD = "userNotFoundPassword";
+    /**
+     * The password used to perform {@link PasswordEncoder#matches(CharSequence, String)}
+     * on when the user is not found to avoid SEC-2056. This is necessary, because some
+     * {@link PasswordEncoder} implementation will short circuit if the password is not
+     * in valid format.
+     */
+    private volatile String userNotFoundEncodedPassword;
 
     private UserDetailsService userDetailsService;
-    private VerifiedCodeRepository verifiedCodeRepository;
+    private PasswordEncoder passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
     private GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
-
-    public SmsAuthenticationProvider() {
-        setPostAuthenticationChecks(new DefaultNullAuthenticationChecks());
-    }
 
     @Override
     public void afterPropertiesSet() {
         Assert.notNull(userDetailsService, "A UserDetailsService must be set");
-        Assert.notNull(verifiedCodeRepository, "A VerifiedCodeRepository must be set");
     }
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return SmsAuthenticationToken.class.isAssignableFrom(authentication);
+        return PasswordAuthenticationToken.class.isAssignableFrom(authentication);
     }
 
     @Override
     protected UserDetails retrieveUser(String username, AbstractJwtAuthenticationToken authentication) throws AuthenticationException {
+        prepareTimingAttackProtection();
         UserDetails loadedUser = userDetailsService.loadUserByUsername(username);
         try {
             if (loadedUser == null) {
@@ -48,27 +54,41 @@ public class SmsAuthenticationProvider extends AbstractJwtAuthenticationProvider
                         "UserDetailsService returned null, which is an interface contract violation");
             }
             return loadedUser;
-        } catch (UsernameNotFoundException | InternalAuthenticationServiceException ex) {
+        } catch (UsernameNotFoundException ex) {
+            mitigateAgainstTimingAttack(authentication);
+            throw ex;
+        } catch (InternalAuthenticationServiceException ex) {
             throw ex;
         } catch (Exception ex) {
             throw new InternalAuthenticationServiceException(ex.getMessage(), ex);
         }
     }
 
+    private void prepareTimingAttackProtection() {
+        if (userNotFoundEncodedPassword == null) {
+            userNotFoundEncodedPassword = passwordEncoder.encode(USER_NOT_FOUND_PASSWORD);
+        }
+    }
+
+    private void mitigateAgainstTimingAttack(Authentication authentication) {
+        if (authentication.getCredentials() != null) {
+            String presentPassword = authentication.getCredentials().toString();
+            passwordEncoder.matches(presentPassword, userNotFoundEncodedPassword);
+        }
+    }
+
     @Override
-    protected void additionalAuthenticationChecks(UserDetails userDetails, AbstractJwtAuthenticationToken authentication)
-            throws AuthenticationException {
-        String mobile = authentication.getName();
-        if (!verifiedCodeRepository.contains(mobile)) {
-            logger.debug("Failed to authenticate since no credentials stored");
+    protected void additionalAuthenticationChecks(
+            UserDetails userDetails, AbstractJwtAuthenticationToken authentication) throws AuthenticationException {
+        if (authentication.getCredentials() == null) {
+            logger.debug("Failed to authenticate since no credentials provided");
             throw new BadCredentialsException("Bad credentials");
         }
-        String code = authentication.getCredentials().toString();
-        if (!verifiedCodeRepository.load(mobile).equals(code)) {
-            logger.debug("Failed to authenticate since code does not match stored value");
+        String presentedPassword = authentication.getCredentials().toString();
+        if (!passwordEncoder.matches(presentedPassword, userDetails.getPassword())) {
+            logger.debug("Failed to authenticate since password does not match stored value");
             throw new BadCredentialsException("Bad credentials");
         }
-        verifiedCodeRepository.remove(mobile);
     }
 
     @Override
@@ -77,7 +97,7 @@ public class SmsAuthenticationProvider extends AbstractJwtAuthenticationProvider
         // so subsequent attempts are successful even with encoded passwords.
         // Also ensure we return the original getDetails(), so that future
         // authentication events after cache expiry contain the details
-        SmsAuthenticationToken result = new SmsAuthenticationToken(user,
+        PasswordAuthenticationToken result = new PasswordAuthenticationToken(user,
                 authentication.getCredentials(), authoritiesMapper.mapAuthorities(user.getAuthorities()));
         result.setDetails(authentication.getDetails());
         this.logger.debug("Authenticated user");
@@ -89,19 +109,14 @@ public class SmsAuthenticationProvider extends AbstractJwtAuthenticationProvider
         this.userDetailsService = userDetailsService;
     }
 
-    public void setVerifiedCodeRepository(VerifiedCodeRepository verifiedCodeRepository) {
-        Assert.notNull(verifiedCodeRepository, "verifiedCodeRepository cannot be null");
-        this.verifiedCodeRepository = verifiedCodeRepository;
+    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+        Assert.notNull(passwordEncoder, "passwordEncoder cannot be null");
+        this.passwordEncoder = passwordEncoder;
+        this.userNotFoundEncodedPassword = null;
     }
 
     public void setAuthoritiesMapper(GrantedAuthoritiesMapper authoritiesMapper) {
         Assert.notNull(authoritiesMapper, "authoritiesMapper cannot be null");
         this.authoritiesMapper = authoritiesMapper;
-    }
-
-    private static class DefaultNullAuthenticationChecks implements UserDetailsChecker {
-        @Override
-        public void check(UserDetails user) {
-        }
     }
 }

@@ -18,7 +18,7 @@ public class JwtAuthenticationFailureHandler implements AuthenticationFailureHan
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
-        OAuth2Error error = new OAuth2Error(OAuth2ErrorCodes.INVALID_REQUEST);
+        OAuth2Error error = new OAuth2Error(OAuth2ErrorCodes.INVALID_REQUEST, exception.getMessage(), null);
 
         ServletServerHttpResponse httpResponse = new ServletServerHttpResponse(response);
         httpResponse.setStatusCode(HttpStatus.BAD_REQUEST);

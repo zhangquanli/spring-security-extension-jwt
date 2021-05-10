@@ -1,4 +1,4 @@
-package com.github.zhangquanli.security.sms;
+package com.github.zhangquanli.security.password;
 
 import com.github.zhangquanli.security.jwt.AbstractJwtAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -8,14 +8,14 @@ import java.util.Collection;
 
 /**
  * An {@link org.springframework.security.core.Authentication} implementation that is
- * designed for sms verification of a phone and verified code.
+ * designed for password verification of username and password.
  * <p>
  * The <code>principal</code> and <code>credentials</code> should be set with an
  * <code>Object</code> that provides the respective property via its
  * <code>Object.toString()</code>. The simple such <code>Object</code> to use is
  * <code>String</code>.
  */
-public class SmsAuthenticationToken extends AbstractJwtAuthenticationToken {
+public class PasswordAuthenticationToken extends AbstractJwtAuthenticationToken {
     private final Object principal;
     private Object credentials;
 
@@ -24,7 +24,7 @@ public class SmsAuthenticationToken extends AbstractJwtAuthenticationToken {
      * <code>SmsAuthenticationToken</code>, as the {@link #isAuthenticated()}
      * will return <code>false</code>
      */
-    public SmsAuthenticationToken(Object principal, Object credentials) {
+    public PasswordAuthenticationToken(Object principal, Object credentials) {
         super(null);
         this.principal = principal;
         this.credentials = credentials;
@@ -37,7 +37,7 @@ public class SmsAuthenticationToken extends AbstractJwtAuthenticationToken {
      * producing a trusted (i.e. {@link #isAuthenticated() = <code>true</code>}
      * authentication token.
      */
-    public SmsAuthenticationToken(
+    public PasswordAuthenticationToken(
             Object principal, Object credentials,
             Collection<? extends GrantedAuthority> authorities) {
         super(authorities);

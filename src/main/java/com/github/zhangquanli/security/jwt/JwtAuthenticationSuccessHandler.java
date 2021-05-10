@@ -27,7 +27,7 @@ public class JwtAuthenticationSuccessHandler implements AuthenticationSuccessHan
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-        Jwt jwt = (Jwt) authentication.getPrincipal();
+        Jwt jwt = ((AbstractJwtAuthenticationToken) authentication).getJwt();
         Instant issuedAt = jwt.getIssuedAt();
         assert issuedAt != null;
         Instant expiresAt = jwt.getExpiresAt();

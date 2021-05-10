@@ -7,7 +7,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -70,7 +69,7 @@ public abstract class AbstractJwtAuthenticationProcessingFilter extends Abstract
                 .claim("scope", scope)
                 .build();
         Jwt jwt = jwtEncoder.encode(headers, claims);
-        authResult = new JwtAuthenticationToken(jwt);
+        ((AbstractJwtAuthenticationToken) authResult).setJwt(jwt);
 
         SecurityContextHolder.getContext().setAuthentication(authResult);
         if (logger.isDebugEnabled()) {

@@ -1,7 +1,7 @@
 package com.github.zhangquanli.security.password;
 
-import com.github.zhangquanli.security.jwt.AbstractJwtAuthenticationProvider;
-import com.github.zhangquanli.security.jwt.AbstractJwtAuthenticationToken;
+import com.github.zhangquanli.security.AbstractUserDetailsAuthenticationProvider;
+import com.github.zhangquanli.security.AbstractJwtAuthenticationToken;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
@@ -16,7 +16,7 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.Assert;
 
-public class PasswordAuthenticationProvider extends AbstractJwtAuthenticationProvider implements InitializingBean {
+public class PasswordAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider implements InitializingBean {
     /**
      * The plaintext password used to perform {@link PasswordEncoder#matches(CharSequence, String)}
      * on when the user is not found to avoid SEC-2056.

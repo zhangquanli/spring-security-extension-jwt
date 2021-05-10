@@ -1,4 +1,4 @@
-package com.github.zhangquanli.security.jwt;
+package com.github.zhangquanli.security;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageConverter;

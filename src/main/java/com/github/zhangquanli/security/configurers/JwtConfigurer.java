@@ -1,33 +1,26 @@
 package com.github.zhangquanli.security.configurers;
 
 import com.github.zhangquanli.security.jwt.JwtUtil;
+import com.github.zhangquanli.security.token.authentication.JwtAuthenticationConverter;
+import com.github.zhangquanli.security.token.authentication.JwtAuthenticationProvider;
+import com.github.zhangquanli.security.token.web.*;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationManagerResolver;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationFilter;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
-import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
-import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 
 import javax.servlet.http.HttpServletRequest;
 
-/**
- * JWT Authentication
- */
 public final class JwtConfigurer<H extends HttpSecurityBuilder<H>>
         extends AbstractHttpConfigurer<JwtConfigurer<H>, H> {
     private AuthenticationManagerResolver<HttpServletRequest> authenticationManagerResolver;
@@ -72,7 +65,6 @@ public final class JwtConfigurer<H extends HttpSecurityBuilder<H>>
     public void init(H http) {
         registerDefaultAccessDeniedHandler(http);
         registerDefaultAuthenticationEntryPoint(http);
-        registerDefaultCsrfOverride(http);
         AuthenticationProvider authenticationProvider = getAuthenticationProvider(http);
         http.authenticationProvider(authenticationProvider);
     }
@@ -90,7 +82,7 @@ public final class JwtConfigurer<H extends HttpSecurityBuilder<H>>
         filter.setBearerTokenResolver(bearerTokenResolver);
         filter.setAuthenticationEntryPoint(authenticationEntryPoint);
         filter = postProcess(filter);
-        http.addFilter(filter);
+        http.addFilterAfter(filter, UsernamePasswordAuthenticationFilter.class);
     }
 
     @SuppressWarnings("unchecked")
@@ -106,14 +98,6 @@ public final class JwtConfigurer<H extends HttpSecurityBuilder<H>>
         ExceptionHandlingConfigurer<H> exceptionHandling = http.getConfigurer(ExceptionHandlingConfigurer.class);
         if (exceptionHandling != null) {
             exceptionHandling.defaultAuthenticationEntryPointFor(authenticationEntryPoint, requestMatcher);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void registerDefaultCsrfOverride(H http) {
-        CsrfConfigurer<H> csrf = http.getConfigurer(CsrfConfigurer.class);
-        if (csrf != null) {
-            csrf.ignoringRequestMatchers(requestMatcher);
         }
     }
 

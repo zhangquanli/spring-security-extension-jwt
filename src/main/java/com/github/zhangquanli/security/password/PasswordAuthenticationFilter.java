@@ -1,8 +1,8 @@
 package com.github.zhangquanli.security.password;
 
-import com.github.zhangquanli.security.jwt.AbstractJwtAuthenticationProcessingFilter;
-import com.github.zhangquanli.security.jwt.JwtAuthenticationFailureHandler;
-import com.github.zhangquanli.security.jwt.JwtAuthenticationSuccessHandler;
+import com.github.zhangquanli.security.AbstractJwtAuthenticationProcessingFilter;
+import com.github.zhangquanli.security.JwtAuthenticationFailureHandler;
+import com.github.zhangquanli.security.JwtAuthenticationSuccessHandler;
 import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;

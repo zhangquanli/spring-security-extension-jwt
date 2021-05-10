@@ -1,7 +1,7 @@
 package com.github.zhangquanli.security.sms;
 
-import com.github.zhangquanli.security.jwt.AbstractJwtAuthenticationProvider;
-import com.github.zhangquanli.security.jwt.AbstractJwtAuthenticationToken;
+import com.github.zhangquanli.security.AbstractUserDetailsAuthenticationProvider;
+import com.github.zhangquanli.security.AbstractJwtAuthenticationToken;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -17,7 +17,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.Assert;
 
-public class SmsAuthenticationProvider extends AbstractJwtAuthenticationProvider implements InitializingBean {
+public class SmsAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider implements InitializingBean {
     private final Log logger = LogFactory.getLog(getClass());
 
     private UserDetailsService userDetailsService;

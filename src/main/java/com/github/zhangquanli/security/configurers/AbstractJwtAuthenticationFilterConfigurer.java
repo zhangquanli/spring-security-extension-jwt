@@ -1,6 +1,11 @@
 package com.github.zhangquanli.security.configurers;
 
-import com.github.zhangquanli.security.jwt.*;
+import com.github.zhangquanli.security.AbstractJwtAuthenticationProcessingFilter;
+import com.github.zhangquanli.security.JwtAuthenticationFailureHandler;
+import com.github.zhangquanli.security.JwtAuthenticationSuccessHandler;
+import com.github.zhangquanli.security.jwt.JwtEncoder;
+import com.github.zhangquanli.security.jwt.JwtUtil;
+import com.github.zhangquanli.security.token.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
@@ -9,7 +14,6 @@ import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.*;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
@@ -26,7 +30,6 @@ public abstract class AbstractJwtAuthenticationFilterConfigurer<B extends HttpSe
         T extends AbstractJwtAuthenticationFilterConfigurer<B, T, F>,
         F extends AbstractJwtAuthenticationProcessingFilter> extends AbstractHttpConfigurer<T, B> {
     private final F authFilter;
-    private RequestMatcher loginProcessingRequestMatcher;
     private final AuthenticationEntryPoint authenticationEntryPoint;
     private JwtEncoder jwtEncoder;
 
@@ -47,8 +50,8 @@ public abstract class AbstractJwtAuthenticationFilterConfigurer<B extends HttpSe
      * @return the {@link PasswordLoginConfigurer} for additional customization
      */
     public final T loginProcessingUrl(String loginProcessingUrl) {
-        loginProcessingRequestMatcher = new AntPathRequestMatcher(loginProcessingUrl, "POST");
-        authFilter.setRequiresAuthenticationRequestMatcher(loginProcessingRequestMatcher);
+        authFilter.setRequiresAuthenticationRequestMatcher(
+                new AntPathRequestMatcher(loginProcessingUrl, "POST"));
         return getSelf();
     }
 
@@ -113,8 +116,8 @@ public abstract class AbstractJwtAuthenticationFilterConfigurer<B extends HttpSe
 
     @Override
     public void init(B http) {
-        registerDefaultCsrfOverride(http);
         registerDefaultAuthenticationEntryPoint(http);
+        disableCsrf(http);
     }
 
     @Override
@@ -131,7 +134,7 @@ public abstract class AbstractJwtAuthenticationFilterConfigurer<B extends HttpSe
             this.authFilter.setRememberMeServices(rememberMeServices);
         }
         F filter = postProcess(this.authFilter);
-        http.addFilterAfter(filter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
     }
 
     private JwtEncoder getJwtEncoder(B http) {
@@ -160,14 +163,6 @@ public abstract class AbstractJwtAuthenticationFilterConfigurer<B extends HttpSe
     }
 
     @SuppressWarnings("unchecked")
-    private void registerDefaultCsrfOverride(B http) {
-        CsrfConfigurer<B> csrf = http.getConfigurer(CsrfConfigurer.class);
-        if (csrf != null) {
-            csrf.ignoringRequestMatchers(loginProcessingRequestMatcher);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
     private void registerDefaultAuthenticationEntryPoint(B http) {
         ExceptionHandlingConfigurer<B> exceptionHandling = http.getConfigurer(ExceptionHandlingConfigurer.class);
         if (exceptionHandling != null) {
@@ -175,7 +170,6 @@ public abstract class AbstractJwtAuthenticationFilterConfigurer<B extends HttpSe
                     getAuthenticationEntryPointMatcher(http));
         }
     }
-
 
     private RequestMatcher getAuthenticationEntryPointMatcher(B http) {
         ContentNegotiationStrategy contentNegotiationStrategy = http.getSharedObject(ContentNegotiationStrategy.class);
@@ -189,6 +183,11 @@ public abstract class AbstractJwtAuthenticationFilterConfigurer<B extends HttpSe
         RequestMatcher notXRequestedWith = new NegatedRequestMatcher(
                 new RequestHeaderRequestMatcher("X-Requested-With", "XMLHttpRequest"));
         return new AndRequestMatcher(Arrays.asList(notXRequestedWith, mediaMatcher));
+    }
+
+    @SuppressWarnings("unchecked")
+    private void disableCsrf(B http) {
+        http.removeConfigurer(CsrfConfigurer.class);
     }
 
     @SuppressWarnings("unchecked")

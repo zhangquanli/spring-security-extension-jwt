@@ -1,6 +1,6 @@
 package com.github.zhangquanli.security.sms;
 
-import com.github.zhangquanli.security.jwt.AbstractJwtAuthenticationToken;
+import com.github.zhangquanli.security.AbstractJwtAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.util.Assert;
 

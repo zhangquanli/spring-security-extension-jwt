@@ -1,4 +1,4 @@
-package com.github.zhangquanli.security.jwt;
+package com.github.zhangquanli.security;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -10,7 +10,7 @@ import org.springframework.security.core.userdetails.UserDetailsChecker;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.Assert;
 
-public abstract class AbstractJwtAuthenticationProvider
+public abstract class AbstractUserDetailsAuthenticationProvider
         implements AuthenticationProvider {
     protected final Log logger = LogFactory.getLog(getClass());
 

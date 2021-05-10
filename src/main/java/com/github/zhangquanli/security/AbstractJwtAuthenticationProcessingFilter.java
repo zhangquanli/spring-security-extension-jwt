@@ -1,5 +1,7 @@
-package com.github.zhangquanli.security.jwt;
+package com.github.zhangquanli.security;
 
+import com.github.zhangquanli.security.jwt.*;
+import com.github.zhangquanli.security.AbstractJwtAuthenticationToken;
 import org.springframework.core.log.LogMessage;
 import org.springframework.security.authentication.event.InteractiveAuthenticationSuccessEvent;
 import org.springframework.security.core.Authentication;

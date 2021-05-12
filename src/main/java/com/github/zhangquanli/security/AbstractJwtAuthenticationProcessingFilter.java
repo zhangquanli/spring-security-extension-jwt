@@ -3,6 +3,7 @@ package com.github.zhangquanli.security;
 import com.github.zhangquanli.security.jwt.JoseHeader;
 import com.github.zhangquanli.security.jwt.JwtClaimsSet;
 import com.github.zhangquanli.security.jwt.JwtEncoder;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.log.LogMessage;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,20 +38,22 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractJwtAuthenticationProcessingFilter extends GenericFilterBean {
 
-    private RequestMatcher requiresAuthenticationRequestMatcher;
-
     private AuthenticationManager authenticationManager;
+
+    private RequestMatcher requiresAuthenticationRequestMatcher;
 
     private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource =
             new WebAuthenticationDetailsSource();
 
-    private AuthenticationSuccessHandler successHandler;
-
-    private AuthenticationFailureHandler failureHandler;
+    private Converter<AbstractJwtAuthenticationToken, JwtClaimsSet> jwtClaimsSetConverter;
 
     private Duration expiresIn;
 
     private JwtEncoder jwtEncoder;
+
+    private AuthenticationSuccessHandler successHandler;
+
+    private AuthenticationFailureHandler failureHandler;
 
     protected AbstractJwtAuthenticationProcessingFilter(
             RequestMatcher requiresAuthenticationRequestMatcher) {
@@ -184,10 +187,18 @@ public abstract class AbstractJwtAuthenticationProcessingFilter extends GenericF
      */
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult)
             throws IOException, ServletException {
+        AbstractJwtAuthenticationToken jwtAuthResult = (AbstractJwtAuthenticationToken) authResult;
         JoseHeader headers = JoseHeader.withAlgorithm(SignatureAlgorithm.RS256).build();
+        JwtClaimsSet claims = jwtClaimsSet(jwtAuthResult);
+        Jwt jwt = jwtEncoder.encode(headers, claims);
+        jwtAuthResult.setJwt(jwt);
 
+        SecurityContextHolder.getContext().setAuthentication(jwtAuthResult);
+        logger.debug(LogMessage.format("Set SecurityContextHolder to %s", jwtAuthResult));
+        successHandler.onAuthenticationSuccess(request, response, jwtAuthResult);
+    }
 
-
+    private JwtClaimsSet jwtClaimsSet(AbstractJwtAuthenticationToken authResult) {
         String subject = authResult.getName();
         List<String> audience = Collections.singletonList(
                 ((WebAuthenticationDetails) authResult.getDetails()).getRemoteAddress());
@@ -195,7 +206,18 @@ public abstract class AbstractJwtAuthenticationProcessingFilter extends GenericF
         Instant expiresAt = issuedAt.plus(expiresIn);
         Set<String> scope = authResult.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
-        JwtClaimsSet claims = JwtClaimsSet.builder()
+        if (jwtClaimsSetConverter != null &&
+                jwtClaimsSetConverter.convert(authResult) != null) {
+            return JwtClaimsSet.from(jwtClaimsSetConverter.convert(authResult))
+                    .subject(subject)
+                    .audience(audience)
+                    .issuedAt(issuedAt)
+                    .expiresAt(expiresAt)
+                    .notBefore(issuedAt)
+                    .claim("scope", scope)
+                    .build();
+        }
+        return JwtClaimsSet.builder()
                 .subject(subject)
                 .audience(audience)
                 .issuedAt(issuedAt)
@@ -203,12 +225,6 @@ public abstract class AbstractJwtAuthenticationProcessingFilter extends GenericF
                 .notBefore(issuedAt)
                 .claim("scope", scope)
                 .build();
-        Jwt jwt = jwtEncoder.encode(headers, claims);
-        ((AbstractJwtAuthenticationToken) authResult).setJwt(jwt);
-
-        SecurityContextHolder.getContext().setAuthentication(authResult);
-        logger.debug(LogMessage.format("Set SecurityContextHolder to %s", authResult));
-        successHandler.onAuthenticationSuccess(request, response, authResult);
     }
 
     /**
@@ -251,6 +267,32 @@ public abstract class AbstractJwtAuthenticationProcessingFilter extends GenericF
         this.authenticationDetailsSource = authenticationDetailsSource;
     }
 
+    public void setJwtClaimsSetConverter(
+            Converter<AbstractJwtAuthenticationToken, JwtClaimsSet> jwtClaimsSetConverter) {
+        Assert.notNull(authenticationDetailsSource, "jwtClaimsSetConverter cannot be null");
+        this.jwtClaimsSetConverter = jwtClaimsSetConverter;
+    }
+
+    /**
+     * Sets the expiresIn which will be used to expiration of an jwt.
+     *
+     * @param expiresIn the {@link Duration}
+     */
+    public void setExpiresIn(Duration expiresIn) {
+        Assert.notNull(expiresIn, "expiresIn cannot be null");
+        this.expiresIn = expiresIn;
+    }
+
+    /**
+     * Sets the jwtEncoder which will be used to generate an jwt.
+     *
+     * @param jwtEncoder the {@link JwtEncoder}
+     */
+    public void setJwtEncoder(JwtEncoder jwtEncoder) {
+        Assert.notNull(jwtEncoder, "jwtEncoder cannot be null");
+        this.jwtEncoder = jwtEncoder;
+    }
+
     public void setSuccessHandler(AuthenticationSuccessHandler successHandler) {
         Assert.notNull(successHandler, "successHandler cannot be null");
         this.successHandler = successHandler;
@@ -261,37 +303,11 @@ public abstract class AbstractJwtAuthenticationProcessingFilter extends GenericF
         this.failureHandler = failureHandler;
     }
 
-    /**
-     * Sets the jwtEncoder which will be used to generate an jwt.
-     *
-     * @param jwtEncoder the {@link JwtEncoder}
-     */
-    public void setJwtEncoder(JwtEncoder jwtEncoder) {
-        this.jwtEncoder = jwtEncoder;
-    }
-
-    /**
-     * Sets the expiresIn which will be used to expiration of an jwt.
-     *
-     * @param expiresIn the {@link Duration}
-     */
-    public void setExpiresIn(Duration expiresIn) {
-        this.expiresIn = expiresIn;
-    }
-
-    protected AuthenticationManager getAuthenticationManager() {
+    protected final AuthenticationManager getAuthenticationManager() {
         return authenticationManager;
     }
 
-    protected AuthenticationDetailsSource<HttpServletRequest, ?> getAuthenticationDetailsSource() {
+    protected final AuthenticationDetailsSource<HttpServletRequest, ?> getAuthenticationDetailsSource() {
         return authenticationDetailsSource;
-    }
-
-    protected AuthenticationSuccessHandler getSuccessHandler() {
-        return successHandler;
-    }
-
-    protected AuthenticationFailureHandler getFailureHandler() {
-        return failureHandler;
     }
 }

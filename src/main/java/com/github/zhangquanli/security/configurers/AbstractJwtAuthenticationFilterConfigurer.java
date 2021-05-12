@@ -1,12 +1,15 @@
 package com.github.zhangquanli.security.configurers;
 
 import com.github.zhangquanli.security.AbstractJwtAuthenticationProcessingFilter;
+import com.github.zhangquanli.security.AbstractJwtAuthenticationToken;
 import com.github.zhangquanli.security.JwtAuthenticationFailureHandler;
 import com.github.zhangquanli.security.JwtAuthenticationSuccessHandler;
+import com.github.zhangquanli.security.jwt.JwtClaimsSet;
 import com.github.zhangquanli.security.jwt.JwtEncoder;
 import com.github.zhangquanli.security.jwt.JwtUtil;
 import com.github.zhangquanli.security.token.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -49,7 +52,8 @@ public abstract class AbstractJwtAuthenticationFilterConfigurer<B extends HttpSe
      * Specifies the URL to validate the credentials.
      *
      * @param loginProcessingUrl the URL to validate username and password
-     * @return the {@link PasswordLoginConfigurer} for additional customization
+     * @return the {@link AbstractJwtAuthenticationFilterConfigurer} for
+     * additional customization
      */
     public final T loginProcessingUrl(String loginProcessingUrl) {
         authFilter.setRequiresAuthenticationRequestMatcher(
@@ -58,11 +62,63 @@ public abstract class AbstractJwtAuthenticationFilterConfigurer<B extends HttpSe
     }
 
     /**
+     * Specifies a custom {@link AuthenticationDetailsSource}. The default is
+     * {@link WebAuthenticationDetailsSource}.
+     *
+     * @param authenticationDetailsSource the custom {@link AuthenticationDetailsSource}
+     * @return the {@link AbstractJwtAuthenticationFilterConfigurer} for
+     * additional customization
+     */
+    public final T authenticationDetailsSource(
+            AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource) {
+        authFilter.setAuthenticationDetailsSource(authenticationDetailsSource);
+        return getSelf();
+    }
+
+    /**
+     * Specifies the {@link Converter} to use when authentication convert to claims.
+     *
+     * @param jwtClaimsSetConverter the {@link Converter}
+     * @return the {@link AbstractJwtAuthenticationFilterConfigurer} for
+     * additional customization
+     */
+    public final T jwtClaimsSetConverter(
+            Converter<AbstractJwtAuthenticationToken, JwtClaimsSet> jwtClaimsSetConverter) {
+        authFilter.setJwtClaimsSetConverter(jwtClaimsSetConverter);
+        return getSelf();
+    }
+
+    /**
+     * Specifies the {@link JwtEncoder} to use when jwt generates.
+     *
+     * @param jwtEncoder the {@link JwtEncoder}
+     * @return the {@link AbstractJwtAuthenticationFilterConfigurer} for
+     * additional customization
+     */
+    public final T jwtEncoder(JwtEncoder jwtEncoder) {
+        this.jwtEncoder = jwtEncoder;
+        return getSelf();
+    }
+
+    /**
+     * Specifies the {@link Duration} to use when jwt expires.
+     *
+     * @param expiresIn the {@link Duration}
+     * @return the {@link AbstractJwtAuthenticationFilterConfigurer} for
+     * additional customization
+     */
+    public final T expiresIn(Duration expiresIn) {
+        authFilter.setExpiresIn(expiresIn);
+        return getSelf();
+    }
+
+    /**
      * Specifies the {@link AuthenticationSuccessHandler} to be use when authentication
      * successes.
      *
      * @param successHandler the {@link AuthenticationSuccessHandler}
-     * @return the {@link PasswordLoginConfigurer} for additional customization
+     * @return the {@link AbstractJwtAuthenticationFilterConfigurer} for
+     * additional customization
      */
     public final T successHandler(AuthenticationSuccessHandler successHandler) {
         authFilter.setSuccessHandler(successHandler);
@@ -74,45 +130,11 @@ public abstract class AbstractJwtAuthenticationFilterConfigurer<B extends HttpSe
      * fails.
      *
      * @param failureHandler the {@link AuthenticationFailureHandler}
-     * @return the {@link PasswordLoginConfigurer} fro additional customization
+     * @return the {@link AbstractJwtAuthenticationFilterConfigurer} for
+     * additional customization
      */
     public final T failureHandler(AuthenticationFailureHandler failureHandler) {
         authFilter.setFailureHandler(failureHandler);
-        return getSelf();
-    }
-
-    /**
-     * Specifies a custom {@link AuthenticationDetailsSource}. The default is
-     * {@link WebAuthenticationDetailsSource}.
-     *
-     * @param authenticationDetailsSource the custom {@link AuthenticationDetailsSource}
-     * @return the {@link PasswordLoginConfigurer} for additional customization
-     */
-    public final T authenticationDetailsSource(
-            AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource) {
-        authFilter.setAuthenticationDetailsSource(authenticationDetailsSource);
-        return getSelf();
-    }
-
-    /**
-     * Specifies the {@link JwtEncoder} to use when jwt generates.
-     *
-     * @param jwtEncoder the {@link JwtEncoder}
-     * @return the {@link PasswordLoginConfigurer} for additional customization
-     */
-    public final T jwtEncoder(JwtEncoder jwtEncoder) {
-        this.jwtEncoder = jwtEncoder;
-        return getSelf();
-    }
-
-    /**
-     * Specifies the {@link Duration} to use when jwt expires.
-     *
-     * @param expiresIn the {@link Duration}
-     * @return the {@link PasswordLoginConfigurer} for additional customization
-     */
-    public final T expiresIn(Duration expiresIn) {
-        authFilter.setExpiresIn(expiresIn);
         return getSelf();
     }
 
@@ -130,6 +152,15 @@ public abstract class AbstractJwtAuthenticationFilterConfigurer<B extends HttpSe
         http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
     }
 
+    /**
+     * Gets the Authentication Filter
+     *
+     * @return the Authentication Filter
+     */
+    protected final F getAuthenticationFilter() {
+        return authFilter;
+    }
+
     private JwtEncoder getJwtEncoder(B http) {
         if (jwtEncoder == null) {
             ApplicationContext context = http.getSharedObject(ApplicationContext.class);
@@ -144,15 +175,6 @@ public abstract class AbstractJwtAuthenticationFilterConfigurer<B extends HttpSe
             }
         }
         return jwtEncoder;
-    }
-
-    /**
-     * Gets the Authentication Filter
-     *
-     * @return the Authentication Filter
-     */
-    protected final F getAuthenticationFilter() {
-        return this.authFilter;
     }
 
     @SuppressWarnings("unchecked")

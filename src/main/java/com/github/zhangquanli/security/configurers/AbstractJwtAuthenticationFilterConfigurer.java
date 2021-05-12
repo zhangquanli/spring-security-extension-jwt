@@ -15,8 +15,10 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
 import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.authentication.*;
-import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.util.matcher.*;
 import org.springframework.web.accept.ContentNegotiationStrategy;
 import org.springframework.web.accept.HeaderContentNegotiationStrategy;
@@ -63,7 +65,7 @@ public abstract class AbstractJwtAuthenticationFilterConfigurer<B extends HttpSe
      * @return the {@link PasswordLoginConfigurer} for additional customization
      */
     public final T successHandler(AuthenticationSuccessHandler successHandler) {
-        authFilter.setAuthenticationSuccessHandler(successHandler);
+        authFilter.setSuccessHandler(successHandler);
         return getSelf();
     }
 
@@ -75,7 +77,7 @@ public abstract class AbstractJwtAuthenticationFilterConfigurer<B extends HttpSe
      * @return the {@link PasswordLoginConfigurer} fro additional customization
      */
     public final T failureHandler(AuthenticationFailureHandler failureHandler) {
-        authFilter.setAuthenticationFailureHandler(failureHandler);
+        authFilter.setFailureHandler(failureHandler);
         return getSelf();
     }
 
@@ -124,16 +126,7 @@ public abstract class AbstractJwtAuthenticationFilterConfigurer<B extends HttpSe
     public void configure(B http) {
         authFilter.setJwtEncoder(getJwtEncoder(http));
         authFilter.setAuthenticationManager(http.getSharedObject(AuthenticationManager.class));
-        SessionAuthenticationStrategy sessionAuthenticationStrategy = http
-                .getSharedObject(SessionAuthenticationStrategy.class);
-        if (sessionAuthenticationStrategy != null) {
-            this.authFilter.setSessionAuthenticationStrategy(sessionAuthenticationStrategy);
-        }
-        RememberMeServices rememberMeServices = http.getSharedObject(RememberMeServices.class);
-        if (rememberMeServices != null) {
-            this.authFilter.setRememberMeServices(rememberMeServices);
-        }
-        F filter = postProcess(this.authFilter);
+        F filter = postProcess(authFilter);
         http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
     }
 

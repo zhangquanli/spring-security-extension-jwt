@@ -3,6 +3,7 @@ package com.github.zhangquanli.security.sms;
 import com.github.zhangquanli.security.AbstractJwtAuthenticationProcessingFilter;
 import com.github.zhangquanli.security.JwtAuthenticationFailureHandler;
 import com.github.zhangquanli.security.JwtAuthenticationSuccessHandler;
+import com.github.zhangquanli.security.jwt.JwtUtil;
 import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
@@ -11,6 +12,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.time.Duration;
 
 /**
  * 短信登录配置
@@ -24,8 +26,10 @@ public class SmsAuthenticationFilter extends AbstractJwtAuthenticationProcessing
 
     public SmsAuthenticationFilter() {
         super(DEFAULT_REQUEST_MATCHER);
-        setAuthenticationSuccessHandler(new JwtAuthenticationSuccessHandler());
-        setAuthenticationFailureHandler(new JwtAuthenticationFailureHandler());
+        setSuccessHandler(new JwtAuthenticationSuccessHandler());
+        setFailureHandler(new JwtAuthenticationFailureHandler());
+        setExpiresIn(Duration.ofDays(7L));
+        setJwtEncoder(JwtUtil.defaultJwtEncoder());
     }
 
     @Override
@@ -99,6 +103,6 @@ public class SmsAuthenticationFilter extends AbstractJwtAuthenticationProcessing
      *                    set
      */
     protected void setDetails(HttpServletRequest request, SmsAuthenticationToken authRequest) {
-        authRequest.setDetails(authenticationDetailsSource.buildDetails(request));
+        authRequest.setDetails(getAuthenticationDetailsSource().buildDetails(request));
     }
 }

@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.github.zhangquanli</groupId>
-    <artifactId>security-jwt-spring-boot-starter</artifactId>
+    <artifactId>spring-security-extension-jwt</artifactId>
     <version>0.0.1</version>
-    <name>security-jwt-spring-boot-starter</name>
+    <name>spring-security-extension-jwt</name>
     <description>基于前后端分离原则和JWT规范，定制Spring Security相关登录、认证逻辑</description>
 
     <dependencies>

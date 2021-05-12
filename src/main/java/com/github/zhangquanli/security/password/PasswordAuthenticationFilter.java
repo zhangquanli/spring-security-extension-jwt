@@ -3,7 +3,9 @@ package com.github.zhangquanli.security.password;
 import com.github.zhangquanli.security.AbstractJwtAuthenticationProcessingFilter;
 import com.github.zhangquanli.security.JwtAuthenticationFailureHandler;
 import com.github.zhangquanli.security.JwtAuthenticationSuccessHandler;
+import com.github.zhangquanli.security.jwt.JwtUtil;
 import org.springframework.lang.Nullable;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -13,6 +15,7 @@ import org.springframework.util.Assert;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.time.Duration;
 
 /**
  * 密码登录流程
@@ -26,8 +29,18 @@ public class PasswordAuthenticationFilter extends AbstractJwtAuthenticationProce
 
     public PasswordAuthenticationFilter() {
         super(DEFAULT_REQUEST_MATCHER);
-        setAuthenticationSuccessHandler(new JwtAuthenticationSuccessHandler());
-        setAuthenticationFailureHandler(new JwtAuthenticationFailureHandler());
+        setSuccessHandler(new JwtAuthenticationSuccessHandler());
+        setFailureHandler(new JwtAuthenticationFailureHandler());
+        setExpiresIn(Duration.ofDays(7L));
+        setJwtEncoder(JwtUtil.defaultJwtEncoder());
+    }
+
+    public PasswordAuthenticationFilter(AuthenticationManager authenticationManager) {
+        super(DEFAULT_REQUEST_MATCHER, authenticationManager);
+        setSuccessHandler(new JwtAuthenticationSuccessHandler());
+        setFailureHandler(new JwtAuthenticationFailureHandler());
+        setExpiresIn(Duration.ofDays(7L));
+        setJwtEncoder(JwtUtil.defaultJwtEncoder());
     }
 
     @Override
@@ -83,16 +96,6 @@ public class PasswordAuthenticationFilter extends AbstractJwtAuthenticationProce
         this.postOnly = postOnly;
     }
 
-    @Nullable
-    protected String obtainUsername(HttpServletRequest request) {
-        return request.getParameter(usernameParameter);
-    }
-
-    @Nullable
-    protected String obtainPassword(HttpServletRequest request) {
-        return request.getParameter(passwordParameter);
-    }
-
     /**
      * Provided so that subclasses may configure what is put into the authentication
      * request's details property.
@@ -102,6 +105,16 @@ public class PasswordAuthenticationFilter extends AbstractJwtAuthenticationProce
      *                    set
      */
     protected void setDetails(HttpServletRequest request, PasswordAuthenticationToken authRequest) {
-        authRequest.setDetails(authenticationDetailsSource.buildDetails(request));
+        authRequest.setDetails(getAuthenticationDetailsSource().buildDetails(request));
+    }
+
+    @Nullable
+    protected String obtainUsername(HttpServletRequest request) {
+        return request.getParameter(usernameParameter);
+    }
+
+    @Nullable
+    protected String obtainPassword(HttpServletRequest request) {
+        return request.getParameter(passwordParameter);
     }
 }

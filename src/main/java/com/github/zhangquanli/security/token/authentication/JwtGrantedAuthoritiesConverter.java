@@ -49,7 +49,7 @@ public class JwtGrantedAuthoritiesConverter implements Converter<Jwt, Collection
      * {@link JwtGrantedAuthoritiesConverter#DEFAULT_AUTHORITY_PREFIX}.
      *
      * @param authorityPrefix The authority prefix
-     * @see 5.2
+     * @since 5.2
      */
     public void setAuthorityPrefix(String authorityPrefix) {
         Assert.notNull(authorityPrefix, "authorityPrefix cannot be null");

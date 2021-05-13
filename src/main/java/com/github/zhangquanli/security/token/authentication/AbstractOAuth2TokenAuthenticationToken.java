@@ -33,18 +33,10 @@ public abstract class AbstractOAuth2TokenAuthenticationToken<T extends AbstractO
     private final Object credentials;
     private final T token;
 
-    /**
-     * Sub-class constructor.
-     */
     protected AbstractOAuth2TokenAuthenticationToken(T token) {
         this(token, null);
     }
 
-    /**
-     * Sub-class constructor.
-     *
-     * @param authorities the authorities assigned to the Access Token
-     */
     public AbstractOAuth2TokenAuthenticationToken(T token, Collection<? extends GrantedAuthority> authorities) {
         this(token, token, token, authorities);
     }
@@ -70,6 +62,8 @@ public abstract class AbstractOAuth2TokenAuthenticationToken<T extends AbstractO
 
     /**
      * Get the token bound to this {@link Authentication}
+     *
+     * @return the {@link AbstractOAuth2Token}
      */
     public final T getToken() {
         return token;

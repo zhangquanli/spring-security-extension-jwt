@@ -23,11 +23,9 @@ import java.util.Collection;
  * <a href="https://tools.ietf.org/html/rfc6750#section-1.2" target="_blank">Bearer
  * Token</a>s for protecting OAuth 2.0 Resource Servers.
  * <p>
- * <p>
  * This {@link AuthenticationProvider} is responsible for decoding and verifying a
  * {@link Jwt}-encoded access token, returning its claims set as part of the
  * {@link Authentication} statement.
- * <p>
  * <p>
  * Scopes are translated into {@link GrantedAuthority} according to the following
  * algorithm:

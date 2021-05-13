@@ -91,6 +91,7 @@ public class PasswordAuthenticationFilter extends AbstractJwtAuthenticationProce
      * authentication.
      * <p>
      * Defaults to <tt>true</tt> but may be overridden by subclasses.
+     * @param postOnly post only
      */
     public void setPostOnly(boolean postOnly) {
         this.postOnly = postOnly;

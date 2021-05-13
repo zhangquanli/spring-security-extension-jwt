@@ -53,7 +53,8 @@ public abstract class BearerTokenErrors {
     /**
      * Create a {@link BearerTokenError} caused by an invalid token
      *
-     * @param scope the scope attribute to use in the error
+     * @param message the message
+     * @param scope   the scope attribute to use in the error
      * @return a {@link BearerTokenError}
      */
     public static BearerTokenError insufficientScope(String message, String scope) {

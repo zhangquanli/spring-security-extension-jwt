@@ -2,6 +2,7 @@ package com.github.zhangquanli.security.password;
 
 import com.github.zhangquanli.security.AbstractJwtAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.Assert;
 
 import java.util.Collection;
@@ -23,6 +24,9 @@ public class PasswordAuthenticationToken extends AbstractJwtAuthenticationToken 
      * This constructor can be safely used by any code that wishes to create a
      * <code>SmsAuthenticationToken</code>, as the {@link #isAuthenticated()}
      * will return <code>false</code>
+     *
+     * @param principal   username or {@link UserDetails}
+     * @param credentials password
      */
     public PasswordAuthenticationToken(Object principal, Object credentials) {
         super(null);
@@ -34,8 +38,11 @@ public class PasswordAuthenticationToken extends AbstractJwtAuthenticationToken 
     /**
      * The constructor should only be used by <code>AuthenticationManager</code> or
      * <code>AuthenticationProvider</code> implementation that are satisfied with
-     * producing a trusted (i.e. {@link #isAuthenticated() = <code>true</code>}
-     * authentication token.
+     * producing a trusted authentication token.
+     *
+     * @param principal   username or {@link UserDetails}
+     * @param credentials password
+     * @param authorities authorities
      */
     public PasswordAuthenticationToken(
             Object principal, Object credentials,

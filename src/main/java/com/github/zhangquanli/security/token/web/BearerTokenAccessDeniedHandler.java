@@ -59,6 +59,8 @@ public final class BearerTokenAccessDeniedHandler implements AccessDeniedHandler
 
     /**
      * Set the default realm name to use in the bearer token error response
+     *
+     * @param realmName the realm name
      */
     public void setRealmName(String realmName) {
         this.realmName = realmName;

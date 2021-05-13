@@ -50,6 +50,8 @@ public class BearerTokenAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * Construct a {@code BearerTokenAuthenticationFilter} using the provided parameter(s)
+     *
+     * @param authenticationManagerResolver the {@link AuthenticationManagerResolver}
      */
     public BearerTokenAuthenticationFilter(
             AuthenticationManagerResolver<HttpServletRequest> authenticationManagerResolver) {
@@ -59,6 +61,8 @@ public class BearerTokenAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * Construct a {@code BearerTokenAuthenticationFilter} using the provided parameter(s)
+     *
+     * @param authenticationManager the {@link AuthenticationManager}
      */
     public BearerTokenAuthenticationFilter(AuthenticationManager authenticationManager) {
         Assert.notNull(authenticationManager, "authenticationManager cannot be null");

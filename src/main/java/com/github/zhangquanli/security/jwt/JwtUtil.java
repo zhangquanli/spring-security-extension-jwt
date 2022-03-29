@@ -5,7 +5,9 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -25,7 +27,7 @@ public abstract class JwtUtil {
                 .build();
         JWKSet jwkSet = new JWKSet(rsaKey);
         JWKSource<SecurityContext> jwkSource = (jwkSelector, context) -> jwkSelector.select(jwkSet);
-        return new NimbusJwsEncoder(jwkSource);
+        return new NimbusJwtEncoder(jwkSource);
     }
 
     public static JwtDecoder defaultJwtDecoder() {

@@ -1,9 +1,10 @@
 package com.github.zhangquanli.security.configurers;
 
 import com.github.zhangquanli.security.jwt.JwtUtil;
-import com.github.zhangquanli.security.token.authentication.JwtAuthenticationConverter;
-import com.github.zhangquanli.security.token.authentication.JwtAuthenticationProvider;
-import com.github.zhangquanli.security.token.web.*;
+import com.github.zhangquanli.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import com.github.zhangquanli.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
+import com.github.zhangquanli.security.oauth2.server.resource.web.*;
+import com.github.zhangquanli.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationManagerResolver;

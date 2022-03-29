@@ -5,12 +5,12 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.4.4</version>
+        <version>2.6.1</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.github.zhangquanli</groupId>
     <artifactId>spring-security-extension-jwt</artifactId>
-    <version>0.1.0</version>
+    <version>1.0.0</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>基于前后端分离原则和JWT规范，定制Spring Security相关登录、认证逻辑</description>
@@ -33,7 +33,7 @@
         </dependency>
     </dependencies>
 
-    <licenses>
+    <!--<licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
             <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
@@ -156,5 +156,5 @@
                 </plugins>
             </build>
         </profile>
-    </profiles>
+    </profiles>-->
 </project>

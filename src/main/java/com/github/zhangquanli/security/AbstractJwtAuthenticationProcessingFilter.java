@@ -1,8 +1,5 @@
 package com.github.zhangquanli.security;
 
-import com.github.zhangquanli.security.jwt.JoseHeader;
-import com.github.zhangquanli.security.jwt.JwtClaimsSet;
-import com.github.zhangquanli.security.jwt.JwtEncoder;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.log.LogMessage;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
@@ -13,7 +10,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
@@ -37,22 +34,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public abstract class AbstractJwtAuthenticationProcessingFilter extends GenericFilterBean {
-
     private AuthenticationManager authenticationManager;
-
     private RequestMatcher requiresAuthenticationRequestMatcher;
-
     private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource =
             new WebAuthenticationDetailsSource();
-
     private Converter<AbstractJwtAuthenticationToken, JwtClaimsSet> jwtClaimsSetConverter;
-
     private Duration expiresIn;
-
     private JwtEncoder jwtEncoder;
-
     private AuthenticationSuccessHandler successHandler;
-
     private AuthenticationFailureHandler failureHandler;
 
     protected AbstractJwtAuthenticationProcessingFilter(
@@ -188,9 +177,10 @@ public abstract class AbstractJwtAuthenticationProcessingFilter extends GenericF
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult)
             throws IOException, ServletException {
         AbstractJwtAuthenticationToken jwtAuthResult = (AbstractJwtAuthenticationToken) authResult;
-        JoseHeader headers = JoseHeader.withAlgorithm(SignatureAlgorithm.RS256).build();
+        JwsHeader headers = JwsHeader.with(SignatureAlgorithm.RS256).build();
         JwtClaimsSet claims = jwtClaimsSet(jwtAuthResult);
-        Jwt jwt = jwtEncoder.encode(headers, claims);
+        JwtEncoderParameters parameters = JwtEncoderParameters.from(headers, claims);
+        Jwt jwt = jwtEncoder.encode(parameters);
         jwtAuthResult.setJwt(jwt);
 
         SecurityContextHolder.getContext().setAuthentication(jwtAuthResult);

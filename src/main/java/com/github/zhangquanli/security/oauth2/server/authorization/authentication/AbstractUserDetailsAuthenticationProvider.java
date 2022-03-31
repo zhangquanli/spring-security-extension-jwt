@@ -11,13 +11,11 @@ import org.springframework.security.core.userdetails.UserDetailsChecker;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.Assert;
 
-public abstract class AbstractUserDetailsAuthenticationProvider implements AuthenticationProvider {
+abstract class AbstractUserDetailsAuthenticationProvider implements AuthenticationProvider {
     protected final Log logger = LogFactory.getLog(getClass());
 
     private boolean hideUserNotFoundExceptions = true;
-
     private UserDetailsChecker preAuthenticationChecks = new DefaultPreAuthenticationChecks();
-
     private UserDetailsChecker postAuthenticationChecks = new DefaultPostAuthenticationChecks();
 
     @Override
@@ -172,5 +170,4 @@ public abstract class AbstractUserDetailsAuthenticationProvider implements Authe
             }
         }
     }
-
 }

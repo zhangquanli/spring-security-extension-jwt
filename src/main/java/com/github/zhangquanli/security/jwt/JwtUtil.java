@@ -44,4 +44,7 @@ public abstract class JwtUtil {
             throw new IllegalStateException(e);
         }
     }
+
+    private JwtUtil() {
+    }
 }

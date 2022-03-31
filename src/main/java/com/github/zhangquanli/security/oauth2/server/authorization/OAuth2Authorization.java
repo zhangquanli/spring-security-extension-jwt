@@ -1,20 +1,6 @@
-/*
- * Copyright 2020-2021 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.github.zhangquanli.security.oauth2.server.authorization;
 
+import com.github.zhangquanli.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.lang.Nullable;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
@@ -31,25 +17,23 @@ import java.util.function.Consumer;
 
 /**
  * A representation of an OAuth 2.0 Authorization, which holds state related to the authorization granted
- * to the {@link #getPrincipalName() resource owner}.
+ * to a {@link #getRegisteredClientId() client}, by the {@link #getPrincipalName() resource owner}
+ * or itself in the case of the {@code client_credentials} grant type.
  *
  * @author Joe Grandja
  * @author Krisztian Toth
+ * @see RegisteredClient
  * @see AuthorizationGrantType
  * @see OAuth2Token
  * @see OAuth2AccessToken
  * @see OAuth2RefreshToken
  */
 public class OAuth2Authorization implements Serializable {
-
     private String id;
-
+    private String registeredClientId;
     private String principalName;
-
     private AuthorizationGrantType authorizationGrantType;
-
     private Map<Class<? extends OAuth2Token>, Token<?>> tokens;
-
     private Map<String, Object> attributes;
 
     protected OAuth2Authorization() {
@@ -62,6 +46,15 @@ public class OAuth2Authorization implements Serializable {
      */
     public String getId() {
         return id;
+    }
+
+    /**
+     * Returns the identifier for the {@link RegisteredClient#getId() registered client}.
+     *
+     * @return the {@link RegisteredClient#getId()}
+     */
+    public String getRegisteredClientId() {
+        return registeredClientId;
     }
 
     /**
@@ -96,6 +89,7 @@ public class OAuth2Authorization implements Serializable {
      *
      * @return the {@link Token} of type {@link OAuth2RefreshToken}, or {@code null} if not available
      */
+    @Nullable
     public Token<OAuth2RefreshToken> getRefreshToken() {
         return getToken(OAuth2RefreshToken.class);
     }
@@ -111,7 +105,7 @@ public class OAuth2Authorization implements Serializable {
     @SuppressWarnings("unchecked")
     public <T extends OAuth2Token> Token<T> getToken(Class<T> tokenType) {
         Assert.notNull(tokenType, "tokenType cannot be null");
-        Token<?> token = this.tokens.get(tokenType);
+        Token<?> token = tokens.get(tokenType);
         return token != null ? (Token<T>) token : null;
     }
 
@@ -126,7 +120,7 @@ public class OAuth2Authorization implements Serializable {
     @SuppressWarnings("unchecked")
     public <T extends OAuth2Token> Token<T> getToken(String tokenValue) {
         Assert.hasText(tokenValue, "tokenValue cannot be empty");
-        for (Token<?> token : this.tokens.values()) {
+        for (Token<?> token : tokens.values()) {
             if (token.getToken().getTokenValue().equals(tokenValue)) {
                 return (Token<T>) token;
             }
@@ -167,6 +161,7 @@ public class OAuth2Authorization implements Serializable {
         }
         OAuth2Authorization that = (OAuth2Authorization) obj;
         return Objects.equals(this.id, that.id) &&
+                Objects.equals(this.registeredClientId, that.registeredClientId) &&
                 Objects.equals(this.principalName, that.principalName) &&
                 Objects.equals(this.authorizationGrantType, that.authorizationGrantType) &&
                 Objects.equals(this.tokens, that.tokens) &&
@@ -175,18 +170,19 @@ public class OAuth2Authorization implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, principalName, authorizationGrantType, tokens, attributes);
+        return Objects.hash(this.id, this.registeredClientId, this.principalName,
+                this.authorizationGrantType, this.tokens, this.attributes);
     }
 
     /**
-     * Returns a new {@link Builder}, initialized with the provided principalName.
+     * Returns a new {@link Builder}, initialized with the provided {@link RegisteredClient#getId()}.
      *
-     * @param principalName the principalName
+     * @param registeredClient the {@link RegisteredClient}
      * @return the {@link Builder}
      */
-    public static Builder withPrincipalName(String principalName) {
-        Assert.notNull(principalName, "principalName cannot be null");
-        return new Builder(principalName);
+    public static Builder withRegisteredClient(RegisteredClient registeredClient) {
+        Assert.notNull(registeredClient, "registeredClient cannot be null");
+        return new Builder(registeredClient.getId());
     }
 
     /**
@@ -197,8 +193,9 @@ public class OAuth2Authorization implements Serializable {
      */
     public static Builder from(OAuth2Authorization authorization) {
         Assert.notNull(authorization, "authorization cannot be null");
-        return new Builder(authorization.getPrincipalName())
+        return new Builder(authorization.getRegisteredClientId())
                 .id(authorization.getId())
+                .principalName(authorization.getPrincipalName())
                 .authorizationGrantType(authorization.getAuthorizationGrantType())
                 .tokens(authorization.tokens)
                 .attributes(attrs -> attrs.putAll(authorization.getAttributes()));
@@ -240,7 +237,7 @@ public class OAuth2Authorization implements Serializable {
          * @return the token of type {@link OAuth2Token}
          */
         public T getToken() {
-            return this.token;
+            return token;
         }
 
         /**
@@ -305,7 +302,7 @@ public class OAuth2Authorization implements Serializable {
         @SuppressWarnings("unchecked")
         public <V> V getMetadata(String name) {
             Assert.hasText(name, "name cannot be empty");
-            return (V) this.metadata.get(name);
+            return (V) metadata.get(name);
         }
 
         /**
@@ -314,7 +311,7 @@ public class OAuth2Authorization implements Serializable {
          * @return a {@code Map} of the metadata
          */
         public Map<String, Object> getMetadata() {
-            return this.metadata;
+            return metadata;
         }
 
         protected static Map<String, Object> defaultMetadata() {
@@ -347,13 +344,14 @@ public class OAuth2Authorization implements Serializable {
      */
     public static class Builder implements Serializable {
         private String id;
-        private final String principalName;
+        private final String registeredClientId;
+        private String principalName;
         private AuthorizationGrantType authorizationGrantType;
         private Map<Class<? extends OAuth2Token>, Token<?>> tokens = new HashMap<>();
         private final Map<String, Object> attributes = new HashMap<>();
 
-        protected Builder(String principalName) {
-            this.principalName = principalName;
+        protected Builder(String registeredClientId) {
+            this.registeredClientId = registeredClientId;
         }
 
         /**
@@ -364,6 +362,17 @@ public class OAuth2Authorization implements Serializable {
          */
         public Builder id(String id) {
             this.id = id;
+            return this;
+        }
+
+        /**
+         * Sets the {@code Principal} name of the resource owner (or client).
+         *
+         * @param principalName the {@code Principal} name of the resource owner (or client)
+         * @return the {@link Builder}
+         */
+        public Builder principalName(String principalName) {
+            this.principalName = principalName;
             return this;
         }
 
@@ -418,7 +427,8 @@ public class OAuth2Authorization implements Serializable {
          * @param <T>              the type of the token
          * @return the {@link Builder}
          */
-        public <T extends OAuth2Token> Builder token(T token, Consumer<Map<String, Object>> metadataConsumer) {
+        public <T extends OAuth2Token> Builder token(
+                T token, Consumer<Map<String, Object>> metadataConsumer) {
 
             Assert.notNull(token, "token cannot be null");
             Map<String, Object> metadata = Token.defaultMetadata();
@@ -459,7 +469,7 @@ public class OAuth2Authorization implements Serializable {
          * @return the {@link Builder}
          */
         public Builder attributes(Consumer<Map<String, Object>> attributesConsumer) {
-            attributesConsumer.accept(attributes);
+            attributesConsumer.accept(this.attributes);
             return this;
         }
 
@@ -469,17 +479,18 @@ public class OAuth2Authorization implements Serializable {
          * @return the {@link OAuth2Authorization}
          */
         public OAuth2Authorization build() {
-            Assert.hasText(principalName, "principalName cannot be empty");
-            Assert.notNull(authorizationGrantType, "authorizationGrantType cannot be null");
+            Assert.hasText(this.principalName, "principalName cannot be empty");
+            Assert.notNull(this.authorizationGrantType, "authorizationGrantType cannot be null");
 
             OAuth2Authorization authorization = new OAuth2Authorization();
-            if (!StringUtils.hasText(id)) {
+            if (!StringUtils.hasText(this.id)) {
                 this.id = UUID.randomUUID().toString();
             }
-            authorization.id = id;
-            authorization.principalName = principalName;
-            authorization.authorizationGrantType = authorizationGrantType;
-            authorization.tokens = Collections.unmodifiableMap(tokens);
+            authorization.id = this.id;
+            authorization.registeredClientId = this.registeredClientId;
+            authorization.principalName = this.principalName;
+            authorization.authorizationGrantType = this.authorizationGrantType;
+            authorization.tokens = Collections.unmodifiableMap(this.tokens);
             authorization.attributes = Collections.unmodifiableMap(this.attributes);
             return authorization;
         }

@@ -10,13 +10,11 @@ import java.util.Map;
 /**
  * An {@link Authentication} implementation used for the OAuth 2.0 Password Grant.
  *
- * @author Joe Grandja
- * @author Madhu Bhat
- * @author Daniel Garnier-Moiroux
+ * @author zhangquanli
  * @see OAuth2AuthorizationGrantAuthenticationToken
- * @see OAuth2PasswordAuthenticationProvider
+ * @see OAuth2PasswordCredentialsAuthenticationProvider
  */
-public class OAuth2PasswordAuthenticationToken extends OAuth2AuthorizationGrantAuthenticationToken {
+public class OAuth2PasswordCredentialsAuthenticationToken extends OAuth2AuthorizationGrantAuthenticationToken {
     private final String username;
     private final String password;
 
@@ -26,7 +24,7 @@ public class OAuth2PasswordAuthenticationToken extends OAuth2AuthorizationGrantA
      * @param username the username
      * @param password the password
      */
-    public OAuth2PasswordAuthenticationToken(
+    public OAuth2PasswordCredentialsAuthenticationToken(
             String username, String password, Authentication clientPrincipal,
             @Nullable Map<String, Object> additionalParameters) {
         super(AuthorizationGrantType.PASSWORD, clientPrincipal, additionalParameters);

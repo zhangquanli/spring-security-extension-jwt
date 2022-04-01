@@ -2,10 +2,10 @@ package com.github.zhangquanli.security.oauth2.server.authorization.web;
 
 import com.github.zhangquanli.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationToken;
 import com.github.zhangquanli.security.oauth2.server.authorization.authentication.OAuth2AuthorizationGrantAuthenticationToken;
-import com.github.zhangquanli.security.oauth2.server.authorization.authentication.OAuth2PasswordAuthenticationProvider;
+import com.github.zhangquanli.security.oauth2.server.authorization.authentication.OAuth2PasswordCredentialsAuthenticationProvider;
 import com.github.zhangquanli.security.oauth2.server.authorization.authentication.OAuth2RefreshTokenAuthenticationProvider;
 import com.github.zhangquanli.security.oauth2.server.authorization.web.authentication.DelegatingAuthenticationConverter;
-import com.github.zhangquanli.security.oauth2.server.authorization.web.authentication.OAuth2PasswordAuthenticationConverter;
+import com.github.zhangquanli.security.oauth2.server.authorization.web.authentication.OAuth2PasswordCredentialsAuthenticationConverter;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -63,7 +63,7 @@ import java.util.Map;
  * @author Madhu Bhat
  * @author Daniel Garnier-Moiroux
  * @see AuthenticationManager
- * @see OAuth2PasswordAuthenticationProvider
+ * @see OAuth2PasswordCredentialsAuthenticationProvider
  * @see OAuth2RefreshTokenAuthenticationProvider
  * @see <a href="https://tools.ietf.org/html/rfc6749#section-3.2" target="_blank">
  * Section 3.2 Token Endpoint</a>
@@ -81,9 +81,9 @@ public class OAuth2TokenEndpointFilter extends OncePerRequestFilter {
             new OAuth2AccessTokenResponseHttpMessageConverter();
     private final HttpMessageConverter<OAuth2Error> errorHttpResponseConverter =
             new OAuth2ErrorHttpMessageConverter();
-
-    private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource =
+    private final AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource =
             new WebAuthenticationDetailsSource();
+
     private AuthenticationConverter authenticationConverter;
     private AuthenticationSuccessHandler authenticationSuccessHandler = this::sendAccessTokenResponse;
     private AuthenticationFailureHandler authenticationFailureHandler = this::sendErrorResponse;
@@ -94,17 +94,7 @@ public class OAuth2TokenEndpointFilter extends OncePerRequestFilter {
      * @param authenticationManager the authentication manager
      */
     public OAuth2TokenEndpointFilter(AuthenticationManager authenticationManager) {
-        this(authenticationManager, DEFAULT_TOKEN_ENDPOINT_URI);
-    }
-
-    /**
-     * Constructs an {@code OAuth2TokenEndpointFilter} using the provided parameters.
-     *
-     * @param authenticationManager the authentication manager
-     * @param tokenEndpointUri      the endpoint {@code URI} for access token requests
-     */
-    public OAuth2TokenEndpointFilter(AuthenticationManager authenticationManager, String tokenEndpointUri) {
-        this(authenticationManager, new AntPathRequestMatcher(tokenEndpointUri, HttpMethod.POST.name()));
+        this(authenticationManager, new AntPathRequestMatcher(DEFAULT_TOKEN_ENDPOINT_URI, HttpMethod.POST.name()));
     }
 
     /**
@@ -120,7 +110,7 @@ public class OAuth2TokenEndpointFilter extends OncePerRequestFilter {
         this.tokenEndpointMatcher = tokenEndpointMatcher;
         this.authenticationConverter = new DelegatingAuthenticationConverter(
                 Collections.singletonList(
-                        new OAuth2PasswordAuthenticationConverter()));
+                        new OAuth2PasswordCredentialsAuthenticationConverter()));
     }
 
 
@@ -158,16 +148,6 @@ public class OAuth2TokenEndpointFilter extends OncePerRequestFilter {
             SecurityContextHolder.clearContext();
             authenticationFailureHandler.onAuthenticationFailure(request, response, ex);
         }
-    }
-
-    /**
-     * Sets the {@link AuthenticationDetailsSource} used for building an authentication details instance from {@link HttpServletRequest}.
-     *
-     * @param authenticationDetailsSource the {@link AuthenticationDetailsSource} used for building an authentication details instance from {@link HttpServletRequest}
-     */
-    public void setAuthenticationDetailsSource(AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource) {
-        Assert.notNull(authenticationDetailsSource, "authenticationDetailsSource cannot be null");
-        this.authenticationDetailsSource = authenticationDetailsSource;
     }
 
     /**

@@ -29,6 +29,7 @@ import org.springframework.util.Assert;
  */
 public class OAuth2ClientAuthenticationProvider implements AuthenticationProvider {
     private static final String CLIENT_AUTHENTICATION_ERROR_URI = "https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1-04#section-3.2.1";
+
     private final RegisteredClientRepository registeredClientRepository;
     private PasswordEncoder passwordEncoder;
 

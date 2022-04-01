@@ -1,6 +1,6 @@
 package com.github.zhangquanli.security.oauth2.server.authorization.web.authentication;
 
-import com.github.zhangquanli.security.oauth2.server.authorization.authentication.OAuth2PasswordAuthenticationToken;
+import com.github.zhangquanli.security.oauth2.server.authorization.authentication.OAuth2PasswordCredentialsAuthenticationToken;
 import com.github.zhangquanli.security.oauth2.server.authorization.web.OAuth2TokenEndpointFilter;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
@@ -18,14 +18,14 @@ import java.util.Map;
 
 /**
  * Attempts to extract an Access Token Request from {@link HttpServletRequest} for the OAuth 2.0 Authorization Code Grant
- * and then converts it to an {@link OAuth2PasswordAuthenticationToken} used for authenticating the authorization grant.
+ * and then converts it to an {@link OAuth2PasswordCredentialsAuthenticationToken} used for authenticating the authorization grant.
  *
  * @author Joe Grandja
  * @see AuthenticationConverter
- * @see OAuth2PasswordAuthenticationToken
+ * @see OAuth2PasswordCredentialsAuthenticationToken
  * @see OAuth2TokenEndpointFilter
  */
-public final class OAuth2PasswordAuthenticationConverter implements AuthenticationConverter {
+public final class OAuth2PasswordCredentialsAuthenticationConverter implements AuthenticationConverter {
     @Nullable
     @Override
     public Authentication convert(HttpServletRequest request) {
@@ -69,7 +69,7 @@ public final class OAuth2PasswordAuthenticationConverter implements Authenticati
             }
         });
 
-        return new OAuth2PasswordAuthenticationToken(
+        return new OAuth2PasswordCredentialsAuthenticationToken(
                 username, password, clientPrincipal, additionalParameters);
     }
 }

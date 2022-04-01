@@ -3,7 +3,7 @@ package com.github.zhangquanli.security.configurers;
 import com.github.zhangquanli.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import com.github.zhangquanli.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationToken;
 import com.github.zhangquanli.security.oauth2.server.authorization.authentication.OAuth2AuthorizationGrantAuthenticationToken;
-import com.github.zhangquanli.security.oauth2.server.authorization.authentication.OAuth2PasswordAuthenticationProvider;
+import com.github.zhangquanli.security.oauth2.server.authorization.authentication.OAuth2PasswordCredentialsAuthenticationProvider;
 import com.github.zhangquanli.security.oauth2.server.authorization.config.ProviderSettings;
 import com.github.zhangquanli.security.oauth2.server.authorization.web.OAuth2TokenEndpointFilter;
 import org.springframework.http.HttpMethod;
@@ -128,8 +128,8 @@ public final class OAuth2TokenEndpointConfigurer<B extends HttpSecurityBuilder<B
         UserDetailsService userDetailsService = OAuth2ConfigurerUtils.getUserDetailsService(http);
         JwtEncoder jwtEncoder = OAuth2ConfigurerUtils.getJwtEncoder(http);
 
-        OAuth2PasswordAuthenticationProvider passwordAuthenticationProvider =
-                new OAuth2PasswordAuthenticationProvider(authorizationService, userDetailsService, jwtEncoder);
+        OAuth2PasswordCredentialsAuthenticationProvider passwordAuthenticationProvider =
+                new OAuth2PasswordCredentialsAuthenticationProvider(authorizationService, userDetailsService, jwtEncoder);
         authenticationProviders.add(passwordAuthenticationProvider);
 
         return authenticationProviders;

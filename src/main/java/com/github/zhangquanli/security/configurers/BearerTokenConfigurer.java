@@ -1,8 +1,12 @@
 package com.github.zhangquanli.security.configurers;
 
+import com.github.zhangquanli.security.oauth2.jwt.JwtUtil;
 import com.github.zhangquanli.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import com.github.zhangquanli.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
-import com.github.zhangquanli.security.oauth2.server.resource.web.*;
+import com.github.zhangquanli.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
+import com.github.zhangquanli.security.oauth2.server.resource.web.BearerTokenAuthenticationFilter;
+import com.github.zhangquanli.security.oauth2.server.resource.web.BearerTokenResolver;
+import com.github.zhangquanli.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import com.github.zhangquanli.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,7 +22,6 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
-import com.github.zhangquanli.security.oauth2.jwt.JwtUtil;
 
 import javax.servlet.http.HttpServletRequest;
 

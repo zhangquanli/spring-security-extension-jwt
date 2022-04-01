@@ -49,16 +49,16 @@ import java.util.Arrays;
 public class OAuth2ClientAuthenticationFilter extends OncePerRequestFilter {
     private final AuthenticationManager authenticationManager;
     private final RequestMatcher requestMatcher;
-    private final HttpMessageConverter<OAuth2Error> errorHttpMessageConverter = new OAuth2ErrorHttpMessageConverter();
+    private final HttpMessageConverter<OAuth2Error> errorHttpMessageConverter =
+            new OAuth2ErrorHttpMessageConverter();
     private final AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource =
             new WebAuthenticationDetailsSource();
+
     private AuthenticationConverter authenticationConverter;
     private AuthenticationSuccessHandler authenticationSuccessHandler = this::onAuthenticationSuccess;
     private AuthenticationFailureHandler authenticationFailureHandler = this::onAuthenticationFailure;
 
-    public OAuth2ClientAuthenticationFilter(
-            AuthenticationManager authenticationManager,
-            RequestMatcher requestMatcher) {
+    public OAuth2ClientAuthenticationFilter(AuthenticationManager authenticationManager, RequestMatcher requestMatcher) {
         Assert.notNull(authenticationManager, "authenticationManager cannot be null");
         Assert.notNull(requestMatcher, "requestMatcher cannot be null");
         this.authenticationManager = authenticationManager;
@@ -66,8 +66,7 @@ public class OAuth2ClientAuthenticationFilter extends OncePerRequestFilter {
         this.authenticationConverter = new DelegatingAuthenticationConverter(
                 Arrays.asList(
                         new ClientSecretBasicAuthenticationConverter(),
-                        new ClientSecretPostAuthenticationConverter())
-        );
+                        new ClientSecretPostAuthenticationConverter()));
     }
 
     @Override

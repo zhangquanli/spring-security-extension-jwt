@@ -8,7 +8,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.OAuth2Error;
@@ -31,64 +30,15 @@ import java.util.List;
  * @author Joe Grandja
  * @see OAuth2ClientAuthenticationFilter
  */
-public final class OAuth2ClientAuthenticationConfigurer<B extends HttpSecurityBuilder<B>>
-        extends AbstractHttpConfigurer<OAuth2ClientAuthenticationConfigurer<B>, B> {
+public final class OAuth2ClientAuthenticationConfigurer extends AbstractOAuth2Configurer {
     private RequestMatcher requestMatcher;
     private AuthenticationConverter authenticationConverter;
     private final List<AuthenticationProvider> authenticationProviders = new ArrayList<>();
     private AuthenticationSuccessHandler authenticationSuccessHandler;
     private AuthenticationFailureHandler errorResponseHandler;
 
-    /**
-     * Sets the {@link AuthenticationConverter} used when attempting to extract client credentials from {@link HttpServletRequest}
-     * to an instance of {@link OAuth2ClientAuthenticationToken} used for authenticating the client.
-     *
-     * @param authenticationConverter the {@link AuthenticationConverter} used when attempting to extract client credentials from {@link HttpServletRequest}
-     * @return the {@link OAuth2ClientAuthenticationConfigurer} for further configuration
-     */
-    public OAuth2ClientAuthenticationConfigurer<B> authenticationConverter(AuthenticationConverter authenticationConverter) {
-        this.authenticationConverter = authenticationConverter;
-        return this;
-    }
-
-    /**
-     * Adds an {@link AuthenticationProvider} used for authenticating an {@link OAuth2ClientAuthenticationToken}.
-     *
-     * @param authenticationProvider an {@link AuthenticationProvider} used for authenticating an {@link OAuth2ClientAuthenticationToken}
-     * @return the {@link OAuth2ClientAuthenticationConfigurer} for further configuration
-     */
-    public OAuth2ClientAuthenticationConfigurer<B> authenticationProvider(AuthenticationProvider authenticationProvider) {
-        Assert.notNull(authenticationProvider, "authenticationProvider cannot be null");
-        this.authenticationProviders.add(authenticationProvider);
-        return this;
-    }
-
-    /**
-     * Sets the {@link AuthenticationSuccessHandler} used for handling a successful client authentication
-     * and associating the {@link OAuth2ClientAuthenticationToken} to the {@link SecurityContext}.
-     *
-     * @param authenticationSuccessHandler the {@link AuthenticationSuccessHandler} used for handling a successful client authentication
-     * @return the {@link OAuth2ClientAuthenticationConfigurer} for further configuration
-     */
-    public OAuth2ClientAuthenticationConfigurer<B> authenticationSuccessHandler(AuthenticationSuccessHandler authenticationSuccessHandler) {
-        this.authenticationSuccessHandler = authenticationSuccessHandler;
-        return this;
-    }
-
-    /**
-     * Sets the {@link AuthenticationFailureHandler} used for handling a failed client authentication
-     * and returning the {@link OAuth2Error Error Response}.
-     *
-     * @param errorResponseHandler the {@link AuthenticationFailureHandler} used for handling a failed client authentication
-     * @return the {@link OAuth2ClientAuthenticationConfigurer} for further configuration
-     */
-    public OAuth2ClientAuthenticationConfigurer<B> errorResponseHandler(AuthenticationFailureHandler errorResponseHandler) {
-        this.errorResponseHandler = errorResponseHandler;
-        return this;
-    }
-
     @Override
-    public void init(B builder) {
+    <B extends HttpSecurityBuilder<B>> void init(B builder) {
         ProviderSettings providerSettings = OAuth2ConfigurerUtils.getProviderSettings(builder);
         this.requestMatcher = new OrRequestMatcher(
                 new AntPathRequestMatcher(providerSettings.getTokenEndpoint(),
@@ -106,7 +56,7 @@ public final class OAuth2ClientAuthenticationConfigurer<B extends HttpSecurityBu
     }
 
     @Override
-    public void configure(B builder) {
+    <B extends HttpSecurityBuilder<B>> void configure(B builder) {
         AuthenticationManager authenticationManager = builder.getSharedObject(AuthenticationManager.class);
         OAuth2ClientAuthenticationFilter clientAuthenticationFilter = new OAuth2ClientAuthenticationFilter(
                 authenticationManager, requestMatcher);
@@ -122,7 +72,60 @@ public final class OAuth2ClientAuthenticationConfigurer<B extends HttpSecurityBu
         builder.addFilterBefore(clientAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
-    private List<AuthenticationProvider> createDefaultAuthenticationProviders(B builder) {
+    @Override
+    RequestMatcher getRequestMatcher() {
+        return requestMatcher;
+    }
+
+    /**
+     * Sets the {@link AuthenticationConverter} used when attempting to extract client credentials from {@link HttpServletRequest}
+     * to an instance of {@link OAuth2ClientAuthenticationToken} used for authenticating the client.
+     *
+     * @param authenticationConverter the {@link AuthenticationConverter} used when attempting to extract client credentials from {@link HttpServletRequest}
+     * @return the {@link OAuth2ClientAuthenticationConfigurer} for further configuration
+     */
+    public OAuth2ClientAuthenticationConfigurer authenticationConverter(AuthenticationConverter authenticationConverter) {
+        this.authenticationConverter = authenticationConverter;
+        return this;
+    }
+
+    /**
+     * Adds an {@link AuthenticationProvider} used for authenticating an {@link OAuth2ClientAuthenticationToken}.
+     *
+     * @param authenticationProvider an {@link AuthenticationProvider} used for authenticating an {@link OAuth2ClientAuthenticationToken}
+     * @return the {@link OAuth2ClientAuthenticationConfigurer} for further configuration
+     */
+    public OAuth2ClientAuthenticationConfigurer authenticationProvider(AuthenticationProvider authenticationProvider) {
+        Assert.notNull(authenticationProvider, "authenticationProvider cannot be null");
+        this.authenticationProviders.add(authenticationProvider);
+        return this;
+    }
+
+    /**
+     * Sets the {@link AuthenticationSuccessHandler} used for handling a successful client authentication
+     * and associating the {@link OAuth2ClientAuthenticationToken} to the {@link SecurityContext}.
+     *
+     * @param authenticationSuccessHandler the {@link AuthenticationSuccessHandler} used for handling a successful client authentication
+     * @return the {@link OAuth2ClientAuthenticationConfigurer} for further configuration
+     */
+    public OAuth2ClientAuthenticationConfigurer authenticationSuccessHandler(AuthenticationSuccessHandler authenticationSuccessHandler) {
+        this.authenticationSuccessHandler = authenticationSuccessHandler;
+        return this;
+    }
+
+    /**
+     * Sets the {@link AuthenticationFailureHandler} used for handling a failed client authentication
+     * and returning the {@link OAuth2Error Error Response}.
+     *
+     * @param errorResponseHandler the {@link AuthenticationFailureHandler} used for handling a failed client authentication
+     * @return the {@link OAuth2ClientAuthenticationConfigurer} for further configuration
+     */
+    public OAuth2ClientAuthenticationConfigurer errorResponseHandler(AuthenticationFailureHandler errorResponseHandler) {
+        this.errorResponseHandler = errorResponseHandler;
+        return this;
+    }
+
+    private <B extends HttpSecurityBuilder<B>> List<AuthenticationProvider> createDefaultAuthenticationProviders(B builder) {
         List<AuthenticationProvider> authenticationProviders = new ArrayList<>();
 
         OAuth2ClientAuthenticationProvider clientAuthenticationProvider =

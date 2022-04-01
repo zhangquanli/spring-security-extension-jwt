@@ -10,7 +10,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
@@ -35,9 +34,8 @@ import java.util.List;
  * @author Joe Grandja
  * @see OAuth2TokenEndpointFilter
  */
-public final class OAuth2TokenEndpointConfigurer<B extends HttpSecurityBuilder<B>>
-        extends AbstractHttpConfigurer<OAuth2TokenEndpointConfigurer<B>, B> {
-    private RequestMatcher tokenEndpointMatcher;
+public final class OAuth2TokenEndpointConfigurer extends AbstractOAuth2Configurer {
+    private RequestMatcher requestMatcher;
     private AuthenticationConverter accessTokenRequestConverter;
     private final List<AuthenticationProvider> authenticationProviders = new LinkedList<>();
     private AuthenticationSuccessHandler accessTokenResponseHandler;
@@ -50,7 +48,7 @@ public final class OAuth2TokenEndpointConfigurer<B extends HttpSecurityBuilder<B
      * @param accessTokenRequestConverter the {@link AuthenticationConverter} used when attempting to extract an Access Token Request from {@link HttpServletRequest}
      * @return the {@link OAuth2TokenEndpointConfigurer} for further configuration
      */
-    public OAuth2TokenEndpointConfigurer<B> accessTokenRequestConverter(AuthenticationConverter accessTokenRequestConverter) {
+    public OAuth2TokenEndpointConfigurer accessTokenRequestConverter(AuthenticationConverter accessTokenRequestConverter) {
         this.accessTokenRequestConverter = accessTokenRequestConverter;
         return this;
     }
@@ -61,7 +59,7 @@ public final class OAuth2TokenEndpointConfigurer<B extends HttpSecurityBuilder<B
      * @param authenticationProvider an {@link AuthenticationProvider} used for authenticating a type of {@link OAuth2AuthorizationGrantAuthenticationToken}
      * @return the {@link OAuth2TokenEndpointConfigurer} for further configuration
      */
-    public OAuth2TokenEndpointConfigurer<B> authenticationProvider(AuthenticationProvider authenticationProvider) {
+    public OAuth2TokenEndpointConfigurer authenticationProvider(AuthenticationProvider authenticationProvider) {
         Assert.notNull(authenticationProvider, "authenticationProvider cannot be null");
         this.authenticationProviders.add(authenticationProvider);
         return this;
@@ -74,7 +72,7 @@ public final class OAuth2TokenEndpointConfigurer<B extends HttpSecurityBuilder<B
      * @param accessTokenResponseHandler the {@link AuthenticationSuccessHandler} used for handling an {@link OAuth2AccessTokenAuthenticationToken}
      * @return the {@link OAuth2TokenEndpointConfigurer} for further configuration
      */
-    public OAuth2TokenEndpointConfigurer<B> accessTokenResponseHandler(AuthenticationSuccessHandler accessTokenResponseHandler) {
+    public OAuth2TokenEndpointConfigurer accessTokenResponseHandler(AuthenticationSuccessHandler accessTokenResponseHandler) {
         this.accessTokenResponseHandler = accessTokenResponseHandler;
         return this;
     }
@@ -86,15 +84,15 @@ public final class OAuth2TokenEndpointConfigurer<B extends HttpSecurityBuilder<B
      * @param errorResponseHandler the {@link AuthenticationFailureHandler} used for handling an {@link OAuth2AuthenticationException}
      * @return the {@link OAuth2TokenEndpointConfigurer} for further configuration
      */
-    public OAuth2TokenEndpointConfigurer<B> errorResponseHandler(AuthenticationFailureHandler errorResponseHandler) {
+    public OAuth2TokenEndpointConfigurer errorResponseHandler(AuthenticationFailureHandler errorResponseHandler) {
         this.errorResponseHandler = errorResponseHandler;
         return this;
     }
 
     @Override
-    public void init(B builder) {
+    <B extends HttpSecurityBuilder<B>> void init(B builder) {
         ProviderSettings providerSettings = OAuth2ConfigurerUtils.getProviderSettings(builder);
-        this.tokenEndpointMatcher = new AntPathRequestMatcher(providerSettings.getTokenEndpoint(), HttpMethod.POST.name());
+        this.requestMatcher = new AntPathRequestMatcher(providerSettings.getTokenEndpoint(), HttpMethod.POST.name());
 
         List<AuthenticationProvider> authenticationProviders =
                 !this.authenticationProviders.isEmpty() ?
@@ -104,11 +102,11 @@ public final class OAuth2TokenEndpointConfigurer<B extends HttpSecurityBuilder<B
     }
 
     @Override
-    public void configure(B http) {
+    <B extends HttpSecurityBuilder<B>> void configure(B http) {
         AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
 
         OAuth2TokenEndpointFilter tokenEndpointFilter =
-                new OAuth2TokenEndpointFilter(authenticationManager, tokenEndpointMatcher);
+                new OAuth2TokenEndpointFilter(authenticationManager, requestMatcher);
         if (accessTokenRequestConverter != null) {
             tokenEndpointFilter.setAuthenticationConverter(accessTokenRequestConverter);
         }
@@ -121,7 +119,12 @@ public final class OAuth2TokenEndpointConfigurer<B extends HttpSecurityBuilder<B
         http.addFilterAfter(tokenEndpointFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
-    private List<AuthenticationProvider> createDefaultAuthenticationProviders(B http) {
+    @Override
+    RequestMatcher getRequestMatcher() {
+        return requestMatcher;
+    }
+
+    private <B extends HttpSecurityBuilder<B>> List<AuthenticationProvider> createDefaultAuthenticationProviders(B http) {
         List<AuthenticationProvider> authenticationProviders = new ArrayList<>();
 
         OAuth2AuthorizationService authorizationService = OAuth2ConfigurerUtils.getAuthorizationService(http);

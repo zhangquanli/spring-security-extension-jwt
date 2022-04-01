@@ -1,6 +1,6 @@
 package com.github.zhangquanli.security.oauth2.server.authorization;
 
-import com.github.zhangquanli.security.oauth2.server.core.OAuth2TokenType;
+import com.github.zhangquanli.security.oauth2.core.OAuth2TokenType;
 import org.springframework.lang.Nullable;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2RefreshToken;

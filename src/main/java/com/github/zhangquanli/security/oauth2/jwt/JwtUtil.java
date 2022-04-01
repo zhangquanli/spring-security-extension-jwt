@@ -1,4 +1,4 @@
-package com.github.zhangquanli.security.jwt;
+package com.github.zhangquanli.security.oauth2.jwt;
 
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;

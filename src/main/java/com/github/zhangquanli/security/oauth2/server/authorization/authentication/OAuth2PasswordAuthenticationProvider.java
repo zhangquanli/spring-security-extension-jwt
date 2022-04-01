@@ -1,6 +1,5 @@
 package com.github.zhangquanli.security.oauth2.server.authorization.authentication;
 
-import com.github.zhangquanli.security.AbstractJwtAuthenticationToken;
 import com.github.zhangquanli.security.oauth2.server.authorization.OAuth2Authorization;
 import com.github.zhangquanli.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import com.github.zhangquanli.security.oauth2.server.authorization.client.RegisteredClient;

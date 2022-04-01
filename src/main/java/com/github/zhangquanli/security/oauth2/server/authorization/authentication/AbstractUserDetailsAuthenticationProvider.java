@@ -1,6 +1,5 @@
 package com.github.zhangquanli.security.oauth2.server.authorization.authentication;
 
-import com.github.zhangquanli.security.AbstractJwtAuthenticationToken;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.security.authentication.*;

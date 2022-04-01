@@ -1,9 +1,10 @@
 package com.github.zhangquanli.security.configurers;
 
-import com.github.zhangquanli.security.jwt.JwtUtil;
+import com.github.zhangquanli.security.oauth2.jwt.JwtUtil;
 import com.github.zhangquanli.security.oauth2.server.authorization.InMemoryOAuth2AuthorizationService;
 import com.github.zhangquanli.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import com.github.zhangquanli.security.oauth2.server.authorization.client.RegisteredClientRepository;
+import com.github.zhangquanli.security.oauth2.server.authorization.config.ProviderSettings;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
@@ -22,6 +23,15 @@ import java.util.Map;
 final class OAuth2ConfigurerUtils {
 
     private OAuth2ConfigurerUtils() {
+    }
+
+    static <B extends HttpSecurityBuilder<B>> ProviderSettings getProviderSettings(B builder) {
+        ProviderSettings providerSettings = builder.getSharedObject(ProviderSettings.class);
+        if (providerSettings == null) {
+            providerSettings = getBean(builder, ProviderSettings.class);
+            builder.setSharedObject(ProviderSettings.class, providerSettings);
+        }
+        return providerSettings;
     }
 
     static <B extends HttpSecurityBuilder<B>> RegisteredClientRepository getRegisteredClientRepository(B builder) {

@@ -1,4 +1,4 @@
-package com.github.zhangquanli.security;
+package com.github.zhangquanli.security.oauth2.server.authorization.authentication;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;

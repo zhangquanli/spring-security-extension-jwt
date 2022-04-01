@@ -1,4 +1,4 @@
-package com.github.zhangquanli.security.oauth2.server.core;
+package com.github.zhangquanli.security.oauth2.core;
 
 import org.springframework.util.Assert;
 

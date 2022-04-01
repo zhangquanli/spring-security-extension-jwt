@@ -1,6 +1,5 @@
 package com.github.zhangquanli.security.configurers;
 
-import com.github.zhangquanli.security.jwt.JwtUtil;
 import com.github.zhangquanli.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import com.github.zhangquanli.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 import com.github.zhangquanli.security.oauth2.server.resource.web.*;
@@ -19,6 +18,7 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
+import com.github.zhangquanli.security.oauth2.jwt.JwtUtil;
 
 import javax.servlet.http.HttpServletRequest;
 

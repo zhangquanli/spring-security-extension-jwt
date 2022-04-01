@@ -104,10 +104,20 @@ public class OAuth2TokenEndpointFilter extends OncePerRequestFilter {
      * @param tokenEndpointUri      the endpoint {@code URI} for access token requests
      */
     public OAuth2TokenEndpointFilter(AuthenticationManager authenticationManager, String tokenEndpointUri) {
+        this(authenticationManager, new AntPathRequestMatcher(tokenEndpointUri, HttpMethod.POST.name()));
+    }
+
+    /**
+     * Constructs an {@code OAuth2TokenEndpointFilter} using the provided parameters.
+     *
+     * @param authenticationManager the authentication manager
+     * @param tokenEndpointMatcher  the endpoint {@code URI} for access token requests
+     */
+    public OAuth2TokenEndpointFilter(AuthenticationManager authenticationManager, RequestMatcher tokenEndpointMatcher) {
         Assert.notNull(authenticationManager, "authenticationManager cannot be null");
-        Assert.hasText(tokenEndpointUri, "tokenEndpointUri cannot be empty");
+        Assert.notNull(tokenEndpointMatcher, "tokenEndpointMatcher cannot be empty");
         this.authenticationManager = authenticationManager;
-        this.tokenEndpointMatcher = new AntPathRequestMatcher(tokenEndpointUri, HttpMethod.POST.name());
+        this.tokenEndpointMatcher = tokenEndpointMatcher;
         this.authenticationConverter = new DelegatingAuthenticationConverter(
                 Collections.singletonList(
                         new OAuth2PasswordAuthenticationConverter()));

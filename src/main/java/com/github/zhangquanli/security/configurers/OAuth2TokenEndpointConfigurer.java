@@ -37,7 +37,7 @@ import java.util.List;
  */
 public final class OAuth2TokenEndpointConfigurer<B extends HttpSecurityBuilder<B>>
         extends AbstractHttpConfigurer<OAuth2TokenEndpointConfigurer<B>, B> {
-    private RequestMatcher requestMatcher;
+    private RequestMatcher tokenEndpointMatcher;
     private AuthenticationConverter accessTokenRequestConverter;
     private final List<AuthenticationProvider> authenticationProviders = new LinkedList<>();
     private AuthenticationSuccessHandler accessTokenResponseHandler;
@@ -94,7 +94,7 @@ public final class OAuth2TokenEndpointConfigurer<B extends HttpSecurityBuilder<B
     @Override
     public void init(B builder) {
         ProviderSettings providerSettings = OAuth2ConfigurerUtils.getProviderSettings(builder);
-        this.requestMatcher = new AntPathRequestMatcher(providerSettings.getTokenEndpoint(), HttpMethod.POST.name());
+        this.tokenEndpointMatcher = new AntPathRequestMatcher(providerSettings.getTokenEndpoint(), HttpMethod.POST.name());
 
         List<AuthenticationProvider> authenticationProviders =
                 !this.authenticationProviders.isEmpty() ?
@@ -108,7 +108,7 @@ public final class OAuth2TokenEndpointConfigurer<B extends HttpSecurityBuilder<B
         AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
 
         OAuth2TokenEndpointFilter tokenEndpointFilter =
-                new OAuth2TokenEndpointFilter(authenticationManager, requestMatcher);
+                new OAuth2TokenEndpointFilter(authenticationManager, tokenEndpointMatcher);
         if (accessTokenRequestConverter != null) {
             tokenEndpointFilter.setAuthenticationConverter(accessTokenRequestConverter);
         }
@@ -134,5 +134,4 @@ public final class OAuth2TokenEndpointConfigurer<B extends HttpSecurityBuilder<B
 
         return authenticationProviders;
     }
-
 }

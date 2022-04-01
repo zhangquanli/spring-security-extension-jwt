@@ -57,7 +57,7 @@ import java.util.Map;
  *
  * <p>
  * The default endpoint {@code URI} {@code /oauth2/token} may be overridden
- * via the constructor {@link #OAuth2TokenEndpointFilter(AuthenticationManager, String)}.
+ * via the constructor {@link #OAuth2TokenEndpointFilter(AuthenticationManager, RequestMatcher)}.
  *
  * @author Joe Grandja
  * @author Madhu Bhat

@@ -6,6 +6,7 @@ import com.github.zhangquanli.security.oauth2.server.authorization.authenticatio
 import com.github.zhangquanli.security.oauth2.server.authorization.authentication.OAuth2RefreshTokenAuthenticationProvider;
 import com.github.zhangquanli.security.oauth2.server.authorization.web.authentication.DelegatingAuthenticationConverter;
 import com.github.zhangquanli.security.oauth2.server.authorization.web.authentication.OAuth2PasswordCredentialsAuthenticationConverter;
+import com.github.zhangquanli.security.oauth2.server.authorization.web.authentication.OAuth2RefreshTokenAuthenticationConverter;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -37,7 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -109,8 +110,9 @@ public class OAuth2TokenEndpointFilter extends OncePerRequestFilter {
         this.authenticationManager = authenticationManager;
         this.tokenEndpointMatcher = tokenEndpointMatcher;
         this.authenticationConverter = new DelegatingAuthenticationConverter(
-                Collections.singletonList(
-                        new OAuth2PasswordCredentialsAuthenticationConverter()));
+                Arrays.asList(
+                        new OAuth2PasswordCredentialsAuthenticationConverter(),
+                        new OAuth2RefreshTokenAuthenticationConverter()));
     }
 
 
@@ -144,7 +146,7 @@ public class OAuth2TokenEndpointFilter extends OncePerRequestFilter {
             OAuth2AccessTokenAuthenticationToken accessTokenAuthentication =
                     (OAuth2AccessTokenAuthenticationToken) authenticationManager.authenticate(authorizationGrantAuthentication);
             authenticationSuccessHandler.onAuthenticationSuccess(request, response, accessTokenAuthentication);
-        } catch (OAuth2AuthenticationException ex) {
+        } catch (AuthenticationException ex) {
             SecurityContextHolder.clearContext();
             authenticationFailureHandler.onAuthenticationFailure(request, response, ex);
         }

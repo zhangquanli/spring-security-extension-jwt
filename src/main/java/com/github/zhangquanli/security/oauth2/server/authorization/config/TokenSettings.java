@@ -50,9 +50,9 @@ public final class TokenSettings extends AbstractSettings {
      */
     public static Builder builder() {
         return new Builder()
-                .accessTokenTimeToLive(Duration.ofMinutes(5))
-                .reuseRefreshTokens(true)
-                .refreshTokenTimeToLive(Duration.ofMinutes(60));
+                .accessTokenTimeToLive(Duration.ofMinutes(30))
+                .reuseRefreshTokens(false)
+                .refreshTokenTimeToLive(Duration.ofDays(7));
     }
 
     /**

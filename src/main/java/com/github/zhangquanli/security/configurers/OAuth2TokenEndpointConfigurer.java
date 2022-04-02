@@ -128,7 +128,7 @@ public final class OAuth2TokenEndpointConfigurer extends AbstractOAuth2Configure
         List<AuthenticationProvider> authenticationProviders = new ArrayList<>();
 
         OAuth2AuthorizationService authorizationService = OAuth2ConfigurerUtils.getAuthorizationService(http);
-        UserDetailsService userDetailsService = OAuth2ConfigurerUtils.getUserDetailsService(http);
+        UserDetailsService userDetailsService = OAuth2ConfigurerUtils.getBean(http, UserDetailsService.class);
         JwtEncoder jwtEncoder = OAuth2ConfigurerUtils.getJwtEncoder(http);
 
         OAuth2PasswordCredentialsAuthenticationProvider passwordAuthenticationProvider =

@@ -129,7 +129,7 @@ public class RegisteredClient implements Serializable {
      * @return the {@link TokenSettings}
      */
     public TokenSettings getTokenSettings() {
-        return this.tokenSettings;
+        return tokenSettings;
     }
 
     @Override

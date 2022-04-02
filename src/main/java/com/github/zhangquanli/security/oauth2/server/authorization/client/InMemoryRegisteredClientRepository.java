@@ -1,12 +1,16 @@
 package com.github.zhangquanli.security.oauth2.server.authorization.client;
 
+import com.github.zhangquanli.security.oauth2.server.authorization.config.TokenSettings;
 import org.springframework.lang.Nullable;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -40,7 +44,6 @@ public class InMemoryRegisteredClientRepository implements RegisteredClientRepos
      * @param registrations the client registration(s)
      */
     public InMemoryRegisteredClientRepository(List<RegisteredClient> registrations) {
-        Assert.notEmpty(registrations, "registrations cannot be empty");
         ConcurrentHashMap<String, RegisteredClient> idRegistrationMapResult = new ConcurrentHashMap<>();
         ConcurrentHashMap<String, RegisteredClient> clientIdRegistrationMapResult = new ConcurrentHashMap<>();
         for (RegisteredClient registration : registrations) {
@@ -68,11 +71,25 @@ public class InMemoryRegisteredClientRepository implements RegisteredClientRepos
         return idRegistrationMap.get(id);
     }
 
-    @Nullable
     @Override
     public RegisteredClient findByClientId(String clientId) {
         Assert.hasText(clientId, "clientId cannot be empty");
-        return clientIdRegistrationMap.get(clientId);
+        RegisteredClient registeredClient = clientIdRegistrationMap.get(clientId);
+        if (registeredClient == null) {
+            TokenSettings tokenSettings = TokenSettings.builder().build();
+            registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
+                    .clientId(clientId)
+                    .clientSecret("{noop}" + clientId)
+                    .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                    .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
+                    .authorizationGrantType(AuthorizationGrantType.PASSWORD)
+                    .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+                    .tokenSettings(tokenSettings)
+                    .build();
+            idRegistrationMap.put(registeredClient.getId(), registeredClient);
+            clientIdRegistrationMap.put(registeredClient.getClientId(), registeredClient);
+        }
+        return registeredClient;
     }
 
     private void assertUniqueIdentifiers(RegisteredClient registeredClient, Map<String, RegisteredClient> registrations) {

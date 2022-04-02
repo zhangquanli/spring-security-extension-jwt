@@ -9,7 +9,6 @@ import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.util.StringUtils;
 
@@ -53,15 +52,6 @@ final class OAuth2ConfigurerUtils {
             builder.setSharedObject(OAuth2AuthorizationService.class, authorizationService);
         }
         return authorizationService;
-    }
-
-    static <B extends HttpSecurityBuilder<B>> UserDetailsService getUserDetailsService(B builder) {
-        UserDetailsService userDetailsService = builder.getSharedObject(UserDetailsService.class);
-        if (userDetailsService == null) {
-            userDetailsService = getBean(builder, UserDetailsService.class);
-            builder.setSharedObject(UserDetailsService.class, userDetailsService);
-        }
-        return userDetailsService;
     }
 
     static <B extends HttpSecurityBuilder<B>> JwtEncoder getJwtEncoder(B builder) {

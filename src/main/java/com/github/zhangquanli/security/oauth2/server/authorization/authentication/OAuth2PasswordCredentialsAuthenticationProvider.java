@@ -68,7 +68,6 @@ public final class OAuth2PasswordCredentialsAuthenticationProvider implements Au
     private final UserDetailsService userDetailsService;
     private final JwtEncoder jwtEncoder;
 
-    private boolean hideUserNotFoundExceptions = true;
     private UserDetailsChecker preAuthenticationChecks = new DefaultPreAuthenticationChecks();
     private UserDetailsChecker postAuthenticationChecks = new DefaultPostAuthenticationChecks();
     private PasswordEncoder passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
@@ -96,36 +95,23 @@ public final class OAuth2PasswordCredentialsAuthenticationProvider implements Au
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         OAuth2PasswordCredentialsAuthenticationToken passwordCredentialsAuthentication =
                 (OAuth2PasswordCredentialsAuthenticationToken) authentication;
-
         String username = passwordCredentialsAuthentication.getUsername();
-        UserDetails user;
-        try {
-            user = retrieveUser(username, passwordCredentialsAuthentication);
-        } catch (UsernameNotFoundException ex) {
-            logger.debug("Failed to find user '" + username + "'");
-            if (!hideUserNotFoundExceptions) {
-                throw ex;
-            }
-            throw new BadCredentialsException("Bad credentials");
-        } catch (InternalAuthenticationServiceException ex) {
-            throw ex;
-        } catch (Exception e) {
-            throw new InternalAuthenticationServiceException(e.getMessage(), e);
-        }
 
-        preAuthenticationChecks.check(user);
-        additionalAuthenticationChecks(user, passwordCredentialsAuthentication);
-        postAuthenticationChecks.check(user);
-        return createSuccessAuthentication(passwordCredentialsAuthentication, user);
+        try {
+            UserDetails user = retrieveUser(username, passwordCredentialsAuthentication);
+            preAuthenticationChecks.check(user);
+            additionalAuthenticationChecks(user, passwordCredentialsAuthentication);
+            postAuthenticationChecks.check(user);
+            return createSuccessAuthentication(passwordCredentialsAuthentication, user);
+        } catch (Exception e) {
+            OAuth2Error error = new OAuth2Error(OAuth2ErrorCodes.INVALID_GRANT);
+            throw new OAuth2AuthenticationException(error, e);
+        }
     }
 
     @Override
     public boolean supports(Class<?> authentication) {
         return OAuth2PasswordCredentialsAuthenticationToken.class.isAssignableFrom(authentication);
-    }
-
-    public void setHideUserNotFoundExceptions(boolean hideUserNotFoundExceptions) {
-        this.hideUserNotFoundExceptions = hideUserNotFoundExceptions;
     }
 
     public void setPreAuthenticationChecks(UserDetailsChecker preAuthenticationChecks) {

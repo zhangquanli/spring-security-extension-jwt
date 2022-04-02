@@ -146,7 +146,7 @@ public class OAuth2TokenEndpointFilter extends OncePerRequestFilter {
             OAuth2AccessTokenAuthenticationToken accessTokenAuthentication =
                     (OAuth2AccessTokenAuthenticationToken) authenticationManager.authenticate(authorizationGrantAuthentication);
             authenticationSuccessHandler.onAuthenticationSuccess(request, response, accessTokenAuthentication);
-        } catch (AuthenticationException ex) {
+        } catch (OAuth2AuthenticationException ex) {
             SecurityContextHolder.clearContext();
             authenticationFailureHandler.onAuthenticationFailure(request, response, ex);
         }

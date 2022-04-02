@@ -30,9 +30,7 @@ public abstract class AbstractOAuth2TokenAuthenticationToken<T extends AbstractO
         extends AbstractAuthenticationToken {
 
     private final Object principal;
-
     private final Object credentials;
-
     private final T token;
 
     protected AbstractOAuth2TokenAuthenticationToken(T token) {

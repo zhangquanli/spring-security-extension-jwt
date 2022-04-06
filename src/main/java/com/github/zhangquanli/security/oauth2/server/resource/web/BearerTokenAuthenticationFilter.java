@@ -40,20 +40,15 @@ import java.io.IOException;
  * @see JwtAuthenticationProvider
  */
 public class BearerTokenAuthenticationFilter extends OncePerRequestFilter {
-
     private final AuthenticationManagerResolver<HttpServletRequest> authenticationManagerResolver;
-
     private AuthenticationEntryPoint authenticationEntryPoint = new BearerTokenAuthenticationEntryPoint();
-
     private AuthenticationFailureHandler authenticationFailureHandler = (request, response, exception) -> {
         if (exception instanceof AuthenticationServiceException) {
             throw exception;
         }
         authenticationEntryPoint.commence(request, response, exception);
     };
-
     private BearerTokenResolver bearerTokenResolver = new DefaultBearerTokenResolver();
-
     private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource = new WebAuthenticationDetailsSource();
 
     /**

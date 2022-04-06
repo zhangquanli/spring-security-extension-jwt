@@ -3,6 +3,7 @@ package com.github.zhangquanli.security.configurers;
 import com.github.zhangquanli.security.oauth2.jwt.JwtUtil;
 import com.github.zhangquanli.security.oauth2.server.authorization.InMemoryOAuth2AuthorizationService;
 import com.github.zhangquanli.security.oauth2.server.authorization.OAuth2AuthorizationService;
+import com.github.zhangquanli.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import com.github.zhangquanli.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import com.github.zhangquanli.security.oauth2.server.authorization.config.ProviderSettings;
 import org.springframework.beans.factory.BeanFactoryUtils;
@@ -27,7 +28,10 @@ final class OAuth2ConfigurerUtils {
     static <B extends HttpSecurityBuilder<B>> ProviderSettings getProviderSettings(B builder) {
         ProviderSettings providerSettings = builder.getSharedObject(ProviderSettings.class);
         if (providerSettings == null) {
-            providerSettings = getBean(builder, ProviderSettings.class);
+            providerSettings = getOptionalBean(builder, ProviderSettings.class);
+            if (providerSettings == null) {
+                providerSettings = ProviderSettings.builder().build();
+            }
             builder.setSharedObject(ProviderSettings.class, providerSettings);
         }
         return providerSettings;
@@ -36,7 +40,10 @@ final class OAuth2ConfigurerUtils {
     static <B extends HttpSecurityBuilder<B>> RegisteredClientRepository getRegisteredClientRepository(B builder) {
         RegisteredClientRepository registeredClientRepository = builder.getSharedObject(RegisteredClientRepository.class);
         if (registeredClientRepository == null) {
-            registeredClientRepository = getBean(builder, RegisteredClientRepository.class);
+            registeredClientRepository = getOptionalBean(builder, RegisteredClientRepository.class);
+            if (registeredClientRepository == null) {
+                registeredClientRepository = new InMemoryRegisteredClientRepository();
+            }
             builder.setSharedObject(RegisteredClientRepository.class, registeredClientRepository);
         }
         return registeredClientRepository;

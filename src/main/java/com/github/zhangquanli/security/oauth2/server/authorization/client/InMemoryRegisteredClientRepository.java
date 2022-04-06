@@ -86,8 +86,7 @@ public class InMemoryRegisteredClientRepository implements RegisteredClientRepos
                     .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
                     .tokenSettings(tokenSettings)
                     .build();
-            idRegistrationMap.put(registeredClient.getId(), registeredClient);
-            clientIdRegistrationMap.put(registeredClient.getClientId(), registeredClient);
+            save(registeredClient);
         }
         return registeredClient;
     }

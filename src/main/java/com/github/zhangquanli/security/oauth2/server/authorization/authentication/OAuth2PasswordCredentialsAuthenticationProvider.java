@@ -104,6 +104,7 @@ public final class OAuth2PasswordCredentialsAuthenticationProvider implements Au
             postAuthenticationChecks.check(user);
             return createSuccessAuthentication(passwordCredentialsAuthentication, user);
         } catch (Exception e) {
+            // TODO 获取token失败后的响应 https://www.rfc-editor.org/rfc/rfc6749.html#section-5.2
             OAuth2Error error = new OAuth2Error(OAuth2ErrorCodes.INVALID_GRANT);
             throw new OAuth2AuthenticationException(error, e);
         }
